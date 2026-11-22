@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>导演台 · 开场站位印张</title>
+<style>
+:root{
+  --paper:#eceded; --panel:#f5f6f5; --side:#e4e6e3; --ink:#191d21; --ink-2:#5b636a; --ink-3:#8c9298;
+  --rule:#d2d5d0; --rule-2:#c2c6bf; --seal:#8a3324; --seal-2:#c56a4e; --seal-soft:#8a332412; --ok:#3d6b4f; --ok-soft:#3d6b4f14;
+  --neon:#1d3a4a; --neon-2:#2f7185;
+  --serif:"Songti SC","STSong","Source Han Serif SC","Noto Serif CJK SC",Georgia,serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:var(--sans)}
+button{cursor:pointer}
+a{color:var(--seal);text-decoration:none}
+.page{max-width:1600px;margin:0 auto;padding:22px 30px 90px}
+h1,h2,h3,h4{margin:0;font-weight:400}
+
+/* ---------- 页眉 ---------- */
+.hd{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.hd h1{font:400 28px/1.1 var(--serif);letter-spacing:.06em}
+.hd .sub{font-size:13px;color:var(--ink-2)}
+.hd .right{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.state{font-size:12px;color:var(--ink-3)}
+.state.dirty{color:var(--seal)}
+.gatepill{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--sans);border-radius:99px;padding:6px 12px}
+.gatepill.pass{color:var(--ok);border:1px solid var(--ok);background:var(--ok-soft)}
+.gatepill.review{color:#8a6a20;border:1px solid #b48b2a;background:#b48b2a12}
+.gatepill.blocked,.gatepill.fail{color:var(--seal);border:1px solid var(--seal);background:var(--seal-soft)}
+.btn{font:500 11px/1 var(--sans);color:var(--ink-2);background:var(--panel);border:1px solid var(--rule-2);border-radius:2px;padding:8px 12px;transition:.15s}
+.btn:hover{border-color:var(--seal);color:var(--seal)}
+.btn.pri{border-color:var(--seal);color:#fff;background:var(--seal)}
+.btn.pri:hover{background:#70291c;color:#fff}
+.btn.tiny{padding:5px 9px;font-size:10.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:16px 0 6px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--rule);border-radius:2px;padding:10px 14px 8px}
+.kpi .l{font:500 10px/1 var(--sans);letter-spacing:.16em;color:var(--ink-3)}
+.kpi .v{font:400 27px/1.15 var(--serif);margin-top:5px}
+.kpi .d{font-size:11px;color:var(--ink-2);margin-top:1px}
+.kpi.accent{border-top:2px solid var(--seal)}
+.kpi.bad .v{color:var(--seal)}
+.galert{margin:12px 0 0;border:1px solid var(--seal);background:var(--seal-soft);border-radius:2px;padding:9px 14px;font-size:13px}
+.galert b{color:var(--seal)}
+.galert span{display:block;font-size:12px;color:var(--ink-2)}
+
+/* ---------- 段选择条 ---------- */
+.segbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0 0;padding:10px 12px;background:var(--panel);border:1px solid var(--rule);border-radius:2px}
+.segbar .lbl{font:500 10px/1 var(--sans);letter-spacing:.16em;color:var(--seal)}
+.segbar select{font:13px var(--sans);padding:5px 8px;border:1px solid var(--rule-2);background:#fff;border-radius:2px}
+.segbar .meta{font-size:12px;color:var(--ink-2);margin-left:auto}
+
+/* ---------- 章节 ---------- */
+section.top-sec{margin-top:30px}
+.sec-h{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule-2);padding-bottom:8px;margin-bottom:14px}
+.sec-h .no{font:500 12px/1 var(--mono);color:var(--seal)}
+.sec-h h2{font:400 20px/1.2 var(--serif);letter-spacing:.05em}
+.sec-h .hint{margin-left:auto;font-size:12px;color:var(--ink-3)}
+
+/* ---------- 卡片 ---------- */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.cards.one{grid-template-columns:1fr}
+@media(max-width:1150px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:2px;padding:16px 18px;margin-bottom:16px}
+.sc-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--rule-2);padding-bottom:10px;margin-bottom:13px}
+.sc-id{font:500 12px/1 var(--mono);color:var(--seal)}
+.sc-h h3{font:400 19px/1.2 var(--serif);letter-spacing:.04em}
+.badge{font:500 10.5px/1 var(--sans);padding:3px 8px;border-radius:99px;border:1px solid var(--seal);color:var(--seal)}
+.badge.soft{border-color:var(--rule-2);color:var(--ink-2)}
+.badge.ok{border-color:var(--ok);color:var(--ok)}
+.sc-use{margin-left:auto;font-size:12px;color:var(--ink-2)}
+.lbl{font:500 11px/1.6 var(--sans);letter-spacing:.14em;color:var(--seal)}
+
+/* ---------- 俯视平面 ---------- */
+.scene .grid{display:grid;grid-template-columns:minmax(320px,640px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:1150px){.scene .grid{grid-template-columns:1fr}}
+.plate{margin:0 0 10px;background:#fff;border:1px solid var(--rule-2);border-radius:2px;overflow:hidden}
+.pic{position:relative;line-height:0}
+.pic img{display:block;width:100%;height:auto}
+.pbox{position:absolute;border:1.5px dashed transparent;border-radius:2px;pointer-events:none}
+.pbox span{position:absolute;left:0;top:-1px;transform:translateY(-100%);font:500 11px/1.4 var(--sans);color:#fff;background:var(--seal);padding:0 4px;border-radius:2px;white-space:nowrap;display:none}
+.pbox.lit{border-color:var(--seal);background:#8a33241f}
+.pbox.lit span{display:block}
+.plate-empty{display:grid;place-items:center;min-height:100px;text-align:center;border:1px dashed var(--rule-2);background:var(--paper);color:var(--ink-3);font-size:13px;padding:12px}
+.plate-empty em{font-style:normal;font-size:12px;opacity:.8}
+
+.room-wrap{padding:16px 18px 0}
+.room{position:relative;width:100%;height:auto;min-height:340px;aspect-ratio:16/10;touch-action:none;user-select:none;-webkit-user-select:none;border:1px solid var(--rule-2);border-radius:2px;background:#fff;background-image:linear-gradient(#00000008 1px,transparent 1px),linear-gradient(90deg,#00000008 1px,transparent 1px);background-size:10% 10%}
+.compass{position:absolute;font-size:11px;line-height:1;color:var(--ink-3);pointer-events:none}
+.compass.n{top:-14px;left:50%;transform:translateX(-50%)}
+.compass.s{bottom:-14px;left:50%;transform:translateX(-50%)}
+.compass.w{left:-14px;top:50%;transform:translateY(-50%)}
+.compass.e{right:-14px;top:50%;transform:translateY(-50%)}
+.thing{position:absolute;border:1px solid var(--rule-2);border-radius:2px;background:var(--side);pointer-events:none}
+.thing span{position:absolute;left:2px;top:1px;font-size:11px;line-height:1.3;color:var(--ink-2);white-space:nowrap;pointer-events:none}
+.thing.round span{left:50%;top:50%;transform:translate(-50%,-50%)}
+.thing.seat{border-color:var(--seal-2);background:#c56a4e1a}
+.thing.round{border-radius:50%}
+.thing.lit{border-color:var(--seal);box-shadow:0 0 0 1.5px var(--seal)}
+.token{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;cursor:grab;touch-action:none;z-index:2;border:2px solid #fff;box-shadow:0 1px 3px #0004}
+.token.sit{background:var(--ink-2)}
+.token b{font:500 13px/1 var(--sans);pointer-events:none}
+.token .name{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;font-size:11px;line-height:1.3;color:var(--ink);background:#ffffffd9;padding:0 3px;border-radius:2px;white-space:nowrap;pointer-events:none}
+.token .facing{position:absolute;inset:-9px;pointer-events:none}
+.token .facing::before{content:"";position:absolute;left:50%;top:0;margin-left:-5px;border:5px solid transparent;border-bottom:7px solid var(--seal);border-top:0}
+.token.sel{outline:2px solid var(--seal);outline-offset:2px}
+.token.lifted{cursor:grabbing;z-index:5;transition:none}
+.tray{margin-top:18px;border:1px dashed var(--rule-2);border-radius:2px;padding:8px 10px;background:var(--paper);min-height:46px}
+.tray.over{border-color:var(--seal);background:var(--seal-soft)}
+.tray-l{display:block;font-size:11px;color:var(--ink-3);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 12px/1 var(--sans);padding:6px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--rule-2);cursor:grab;touch-action:none;user-select:none}
+.chip.lifted{position:fixed;z-index:20;pointer-events:none;box-shadow:0 2px 8px #0003}
+.chips .none{font-size:12px;color:var(--ink-3)}
+
+/* ---------- 右侧控制列 ---------- */
+.side{display:flex;flex-direction:column;gap:11px;min-width:0}
+.pick{border:1px solid var(--rule);border-radius:2px;background:var(--paper);padding:10px 12px;font-size:12.5px;color:var(--ink-2)}
+.pick h4{font:400 16px/1.3 var(--serif);color:var(--ink);margin-bottom:7px}
+.pick .row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+.seg{display:inline-flex;border:1px solid var(--rule-2);border-radius:2px;overflow:hidden}
+.seg button,.rose button,.out{font:500 12px/1 var(--sans);background:var(--panel);color:var(--ink-2);border:0;padding:6px 11px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule-2)}
+.seg button[aria-pressed="true"],.rose button[aria-pressed="true"]{background:var(--seal);color:#fff}
+.rose{display:grid;grid-template-columns:repeat(3,44px);gap:2px}
+.rose button{border:1px solid var(--rule-2);border-radius:2px;padding:6px 0}
+.rose .mid{display:grid;place-items:center;font-size:11px;color:var(--ink-3)}
+.out{border:1px solid var(--rule-2);color:var(--seal)}
+.out:hover,.seg button:hover,.rose button:hover{color:var(--seal)}
+.sentence{border:1px solid var(--rule);border-radius:2px;background:#fff;padding:8px 11px}
+.sentence .sh{display:flex;align-items:center;justify-content:space-between}
+.sentence .text{margin:6px 0 2px;font:400 14px/1.8 var(--serif)}
+.why{margin:0;font-size:12.5px;color:var(--ink-2)}
+.why .lbl{margin-right:8px}
+.live{list-style:none;margin:0;padding:0;font-size:12px}
+.live li{color:var(--seal);background:var(--seal-soft);border-radius:2px;padding:4px 8px;margin-top:4px}
+.live li.ok{color:var(--ok);background:var(--ok-soft);padding-left:8px}
+
+/* ---------- 质量门 ---------- */
+.gate{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:2px 28px}
+@media(max-width:900px){.gate{grid-template-columns:1fr}}
+.gate li{display:flex;gap:8px;padding:5px 0;font-size:12.5px;line-height:1.55}
+.gate .m{flex:none;font-weight:700}
+.gate li.ok .m{color:var(--ok)}
+.gate li.bad .m{color:var(--seal)}
+.gate li.bad{background:var(--seal-soft);border-radius:2px;padding-left:6px}
+.gate small{display:block;color:var(--ink-3)}
+.gsum{margin:10px 0 0;font-size:12px;color:var(--ink-2)}
+
+/* ---------- 表格 / 工作区 ---------- */
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--rule);font-size:13px}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 11px/1 var(--sans);letter-spacing:.1em;color:var(--ink-3);background:var(--side)}
+tr:last-child td{border-bottom:0}
+pre,textarea.editor{font:12px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word}
+textarea.editor{width:100%;min-height:200px;padding:10px;border:1px solid var(--rule-2);border-radius:2px;background:#fff;color:var(--ink)}
+.editor{resize:vertical}
+.fld{display:block;font-size:12px;color:var(--seal);margin:8px 0}
+.fld input,.fld select{display:block;width:100%;max-width:520px;margin-top:3px;padding:6px 8px;border:1px solid var(--rule-2);background:#fff;border-radius:2px;color:var(--ink)}
+.ct-msg{font:12px/1.6 var(--mono);color:var(--ink-2);white-space:pre-wrap;background:#fff;border:1px solid var(--rule);border-radius:2px;padding:8px 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+.frame img,.shot-frame img{width:100%;display:block;border:1px solid var(--rule)}
+.shots-wall{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:900px){.shots-wall{grid-template-columns:repeat(2,1fr)}}
+.shot-card-mini{background:#fff;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.shot-card-mini .hd2{font:500 11px/1.4 var(--mono);color:var(--seal);padding:6px 8px;border-bottom:1px solid var(--rule)}
+.shot-card-mini .bd{padding:7px 9px;font-size:12px;line-height:1.6}
+.work-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.work-tabs button{font:500 11px/1 var(--sans);padding:7px 11px;border:1px solid var(--rule-2);background:var(--panel);color:var(--ink-2);border-radius:2px}
+.work-tabs button.on{background:var(--neon);border-color:var(--neon);color:#fff}
+.work-pane{display:none}
+.work-pane.on{display:block}
+.foot{margin-top:40px;font-size:11px;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:14px}
+#toast{position:fixed;right:20px;bottom:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:2px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50}
+#toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  .btn,.segbar,.tray,.pick,.work-tabs{display:none!important}
+  .page{max-width:none;padding:0}
+  .card{page-break-inside:avoid}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hd">
+    <h1>开场站位 · 导演台</h1>
+    <span class="sub" id="titleSub">剧目 / 段落 / 场景</span>
+    <div class="right">
+      <span id="gatePill" class="gatepill">未读取</span>
+      <span id="dirtyState" class="state">未改动</span>
+      <button class="btn" id="btnRestore" onclick="restoreDraft()" hidden>还原文件版本</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">导入 JSON</button>
+      <input hidden id="importFile" type="file" accept=".json" onchange="importJSON(this)">
+      <button class="btn" id="btnExport" onclick="exportJSON()">导出 JSON</button>
+      <button class="btn" onclick="reloadAll()">刷新</button>
+      <button class="btn pri" onclick="saveLedger()">保存草稿</button>
+      <button class="btn pri" onclick="saveAndCompile()">校验并同步提示词</button>
+      <a class="btn" href="/board.html">旧版导演台</a>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+  <div id="gateAlert"></div>
+
+  <div class="segbar">
+    <span class="lbl">当前段</span>
+    <select id="segSelect" onchange="selectSegment(this.value)"></select>
+    <span class="lbl">集</span>
+    <select id="epSelect" onchange="selectEpisode(this.value)"></select>
+    <span class="meta" id="segMeta">—</span>
+  </div>
+
+  <section class="top-sec">
+    <div class="sec-h"><span class="no">01</span><h2>逐镜开场站位</h2>
+      <span class="hint">上北下南 · 拖动人物吸附到最近物件 · 改动只影响本地工作稿</span></div>
+    <div id="sceneCards" class="cards one"></div>
+  </section>
+
+  <section class="top-sec">
+    <div class="sec-h"><span class="no">02</span><h2>质量门</h2>
+      <span class="hint">服务端权威判定 · 文本检查不等于成片通过</span></div>
+    <div class="card"><ul id="gateList" class="gate"></ul><p id="gateSummary" class="gsum"></p></div>
+  </section>
+
+  <section class="top-sec">
+    <div class="sec-h"><span class="no">03</span><h2>地点与认出来的东西</h2>
+      <span class="hint">物件框与俯视图联动</span></div>
+    <div id="locCards" class="cards"></div>
+  </section>
+
+  <section class="top-sec">
+    <div class="sec-h"><span class="no">04</span><h2>工作区</h2>
+      <span class="hint">剧本 / 分镜 / 提示词 / 参考图 / 成片共用同一段数据</span></div>
+    <div class="work-tabs">
+      <button data-w="ledger" class="on" onclick="work('ledger')">完整台账 JSON</button>
+      <button data-w="script" onclick="work('script')">剧本</button>
+      <button data-w="board" onclick="work('board')">分镜画格墙</button>
+      <button data-w="prompt" onclick="work('prompt')">提示词</button>
+      <button data-w="refs" onclick="work('refs')">参考图</button>
+      <button data-w="media" onclick="work('media')">成片 / QC</button>
+    </div>
+    <div class="work-pane on" id="work-ledger">
+      <label class="fld">完整 ledger JSON（修改后旧报告立即失效）
+        <textarea id="ledgerJSON" class="editor" spellcheck="false" oninput="ledgerEdited()"></textarea></label>
+      <div id="ledgerLocal" class="ct-msg"></div>
+    </div>
+    <div class="work-pane" id="work-script"><div id="scriptBox" class="ct-msg"></div></div>
+    <div class="work-pane" id="work-board"><div id="boardBox"></div></div>
+    <div class="work-pane" id="work-prompt">
+      <label class="fld">prompt.txt（可编辑后保存）
+        <textarea id="promptBox" class="editor" spellcheck="false"></textarea></label>
+      <button class="btn" onclick="savePrompt()">保存提示词</button>
+      <button class="btn pri" onclick="regenSegment()">按当前提示词重新生成</button>
+    </div>
+    <div class="work-pane" id="work-refs"><div id="refsBox"></div></div>
+    <div class="work-pane" id="work-media"><div id="mediaBox"></div></div>
+  </section>
+
+  <footer class="foot">导演台 · 站位印张版 ｜ 数据来自本地服务；text_only / film_verified 如实标注，画面须另行验片。</footer>
+</div>
+<div id="toast"></div>
+<script>
+"use strict";
+/* =========================================================
+   数据层：所有事实来自服务端 API；本地工作稿只存 localStorage
+   ========================================================= */
+let MANIFEST=null, SEG=null, DETAIL=null, LEDGER=null, REPORT=null, DIRTY=false, BUSY=false;
+const DRAFT_KEY=()=>'studio-draft:'+(MANIFEST?.root||'')+':'+(SEG||'');
+const FACINGS=[['NW','西北'],['N','正北'],['NE','东北'],['W','正西'],['E','正东'],['SW','西南'],['S','正南'],['SE','东南']];
+const POSTURES=[['standing','站着'],['seated','坐着'],['crouching','蹲着'],['lying','躺着']];
+const SIDES=[['left','左'],['right','右'],['center','中']];
+const $=id=>document.getElementById(id);
+const arr=v=>Array.isArray(v)?v:[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const xy=o=>o&&['x','y'].every(k=>typeof o[k]==='number'&&isFinite(o[k])&&o[k]>=0&&o[k]<=100);
+function toast(msg,ms=2400){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
+async function api(path,opt){const r=await fetch(path,opt);return r.json();}
+
+function markDirty(on){DIRTY=on;const el=$('dirtyState');el.textContent=on?'页面已改动 · 未导出':'与文件版本一致';el.classList.toggle('dirty',on);$('btnRestore').hidden=!on;localStorage.setItem(DRAFT_KEY(),JSON.stringify(LEDGER));}
+function saveDraftLocal(){if(SEG&&LEDGER)localStorage.setItem(DRAFT_KEY(),JSON.stringify(LEDGER));}
+function loadDraftLocal(){try{const s=localStorage.getItem(DRAFT_KEY());return s?JSON.parse(s):null;}catch(e){return null;}}
+function restoreDraft(){localStorage.removeItem(DRAFT_KEY());markDirty(false);toast('已丢弃本地改动');loadSegment(SEG,true);}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(ledgerForSave(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=SEG+'-continuity.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1200);
+  markDirty(false);toast('已导出 '+SEG+'-continuity.json');
+}
+function importJSON(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.segment!==SEG)throw Error('segment 与当前段不一致：'+d.segment);LEDGER=d;syncFromLedger();markDirty(true);renderAll();toast('已导入工作稿');}catch(e){toast('导入失败：'+e.message);}input.value='';};rd.readAsText(f);
+}
+
+/* =========================================================
+   开场站位：算法与命令行同源思路 —— 点由「物件 + 侧别 + 沿向距离」决定
+   ========================================================= */
+function objects(){return arr(LEDGER?.objects).filter(o=>o&&typeof o==='object');}
+function characters(){return arr(LEDGER?.characters).filter(c=>c&&typeof c==='object');}
+function openingOf(c){if(!c.opening||typeof c.opening!=='object')c.opening={};return c.opening;}
+function firstChar(name){return String(name||'?').trim().charAt(0)||'?';}
+function objBox(o){
+  const x=Number(o.x),y=Number(o.y);
+  if(![x,y].every(v=>isFinite(v)))return null;
+  const w=Number(o.width)||14,h=Number(o.height)||9;
+  return {left:Math.max(0,Math.min(100-w,x-w/2)),top:Math.max(0,Math.min(100-h,y-h/2)),w,h};
+}
+function nearestObject(px,py){
+  let best=null,bd=Infinity;
+  for(const o of objects()){
+    if(!xy(o))continue;
+    const d=Math.hypot(o.x-px,o.y-py);
+    if(d<bd){bd=d;best=o;}
+  }
+  return best;
+}
+function sideOf(o,px,py){
+  if(!o||!xy(o))return 'center';
+  const dx=px-o.x,dy=py-o.y;
+  if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';
+  return dy<0?'center':'left';
+}
+function facingTo(o,c){
+  if(!o||!xy(o)||!xy(c))return null;
+  const dx=o.x-c.x,dy=o.y-c.y;
+  if(Math.abs(dx)<4&&Math.abs(dy)<4)return null;
+  return Math.abs(dx)>Math.abs(dy)?(dx<0?'W':'E'):(dy<0?'N':'S');
+}
+function positionOf(c){
+  const s=c.opening||{};
+  if(xy(s))return {x:s.x,y:s.y};
+  const o=objects().find(o=>o.id===s.anchor_object&&xy(o));
+  if(o){const dx=s.side==='left'?-10:s.side==='right'?10:0;return {x:o.x+dx,y:o.y+12};}
+  return null;
+}
+function lightingLine(){
+  const s=characters().map(c=>{const o=c.opening||{},pos=positionOf(c);return pos?`${c.name||c.id} 在${o.posture==='seated'?'坐':'站'}于${objectName(o.anchor_object)}的${sideName(o.side)}侧，面朝${facingName(o.facing)}。`:null;}).filter(Boolean);
+  return s.length?s.join(' '):'尚无有效坐标：请补物件与人物 opening 的 x/y。';
+}
+function objectName(id){return objects().find(o=>o.id===id)?.name||id||'未登记物件';}
+function sideName(v){return SIDES.find(s=>s[0]===v)?.[1]||'待补';}
+function facingName(v){return FACINGS.find(f=>f[0]===v)?.[1]||'待补';}
+function postureName(v){return POSTURES.find(p=>p[0]===v)?.[1]||'待补';}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+function renderKpis(){
+  const chars=characters(),shots=arr(LEDGER?.shots);
+  const present=chars.filter(c=>c.opening?.presence!==false).length;
+  const absent=chars.length-present;
+  const issues=countIssues();
+  $('kpis').innerHTML=[
+    ['镜头',shots.length,'本段四镜结构'],['开场在场',present,'人次'],
+    ['开场不在场',absent,'可从下方托盘拖入'],['物件锚点',objects().length,'固定物 / 依托物'],
+    ['未过门项',issues,issues?'见质量门':'文本层暂无问题',issues?'bad':'']
+  ].map(([l,v,d,cls])=>`<div class="kpi ${cls||''}"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
+}
+function countIssues(){
+  if(!REPORT)return 0;
+  return arr(REPORT.errors).length+arr(REPORT.warnings).length+arr(REPORT.reference_errors).length;
+}
+function renderGate(){
+  const pill=$('gatePill'),st=REPORT?.status||'未读取';
+  pill.textContent='质量门 · '+st;pill.className='gatepill '+(st==='pass'?'pass':st==='review'?'review':st==='blocked'?'blocked':'fail');
+  const items=[];
+  const push=(ok,code,msg,source)=>items.push(`<li class="${ok?'ok':'bad'}"><span class="m">${ok?'✓':'✗'}</span><span>${esc(code)}<small>${esc(msg)}${source?' · '+esc(source):''}</small></span></li>`);
+  const src=REPORT?.evidence?.text_only?'文本层':'未标注';
+  push(REPORT?.status==='pass','status',REPORT?'报告状态 '+st:'尚未读取服务端报告',src);
+  for(const e of arr(REPORT?.errors))push(false,e.code,e.message,e.field||'');
+  for(const w of arr(REPORT?.warnings))push(false,w.code,w.message,w.field||'');
+  for(const e of arr(REPORT?.reference_errors))push(false,e.code,e.message,e.field||'refs.json');
+  const ev=REPORT?.evidence||{};
+  push(ev.dialogue_text_verified===true,'dialogue_text','对白文本逐句比对',src);
+  push(ev.speaker_binding_verified===true,'speaker_binding','逐句说话人已绑定',src);
+  push(true,'film_verified='+(ev.film_verified?'true':'false'),'成片实测不属于文本检查范围','须另做验片');
+  $('gateList').innerHTML=items.join('');
+  $('gateSummary').textContent='来源：服务端报告权威；text_only=true / film_verified=false。修 prompt 不等于修成片。';
+  const alert=$('gateAlert');
+  if(REPORT&&REPORT.status!=='pass'){
+    alert.innerHTML=`<div class="galert"><b>质量门未通过（${st}）</b><span>共 ${countIssues()} 项待处理；未通过前不得生成。请把下方俯视图改到位，再点「校验并同步提示词」。</span></div>`;
+  }else alert.innerHTML='';
+}
+function renderSceneCards(){
+  const box=$('sceneCards'),shots=arr(LEDGER?.shots);
+  if(!shots.length){box.innerHTML='<div class="card">本段暂无镜头台账。可先在「完整台账 JSON」补 shots，或用下方按钮建空白台账。</div>';return;}
+  box.innerHTML=shots.map((s,i)=>{
+    const focusName=characters().find(c=>c.id===s.lead_subject||c.subject===s.lead_subject||c.name===s.lead_subject)?.name||s.lead_subject||'待补';
+    const line=arr(s.dialogue).map(d=>`${characters().find(c=>c.id===d.speaker||c.subject===d.speaker||c.name===d.speaker)?.name||d.speaker}：「${esc(d.text)}」`).join(' ');
+    const dur=(Number(s.end)-Number(s.start));
+    return `<div class="card scene" data-shot="${i}">
+      <div class="sc-h"><span class="sc-id">${esc(s.id||'镜'+(i+1))}</span><h3>${esc(s.start??'?')}–${esc(s.end??'?')}s</h3>
+        <span class="badge">焦点 · ${esc(focusName)}</span><span class="badge soft">${isFinite(dur)?dur.toFixed(1):'?'}s</span>
+        <span class="sc-use">打开镜头详情 ↓</span></div>
+      <div class="grid">
+        <div><div class="room-wrap"><div class="room" data-room="${i}">
+          <span class="compass n">北</span><span class="compass s">南</span><span class="compass w">西</span><span class="compass e">东</span>
+        </div></div>
+          <div class="tray" data-tray="${i}"><span class="tray-l">开场不在场 · 拖入平面即在场</span><div class="chips"></div></div>
+        </div>
+        <div class="side">
+          <div class="pick" data-pick="${i}"></div>
+          <div class="sentence"><div class="sh"><span class="lbl">开场走位句</span><button class="btn tiny" onclick="copySentence(${i})">复制</button></div>
+            <div class="text" data-sentence="${i}"></div></div>
+          <p class="why"><span class="lbl">为什么这么排</span><span data-why="${i}"></span></p>
+          <div data-live="${i}"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  shots.forEach((s,i)=>renderRoom(i,s));
+}
+function renderRoom(i,shot){
+  const room=document.querySelector(`[data-room="${i}"]`);if(!room)return;
+  room.querySelectorAll('.thing,.token').forEach(n=>n.remove());
+  const plate=$('locCards');
+  for(const o of objects()){
+    const b=objBox(o);if(!b)continue;
+    const d=document.createElement('div');d.className='thing'+(o.type==='seat'?' seat':'')+(/round|circle|桌|圆/.test((o.name||'')+(o.type||''))?' round':'');
+    d.style.left=b.left+'%';d.style.top=b.top+'%';d.style.width=b.w+'%';d.style.height=b.h+'%';
+    d.dataset.obj=o.id;d.innerHTML=`<span>${esc(o.name||o.id)}</span>`;room.appendChild(d);
+  }
+  for(const c of characters()){
+    const s=c.opening||{},pos=positionOf(c);if(!pos)continue;
+    if(s.presence===false)continue;
+    const t=document.createElement('div');t.className='token'+(s.posture==='seated'?' sit':'');
+    t.style.left=pos.x+'%';t.style.top=pos.y+'%';t.dataset.ch=c.id;
+    t.innerHTML=`<b>${esc(firstChar(c.name||c.id))}</b><span class="name">${esc(c.name||c.id)}</span><span class="facing" style="transform:rotate(${facingAngle(s.facing)}deg)"></span>`;
+    t.onpointerdown=ev=>startDrag(ev,i,c,t);room.appendChild(t);
+  }
+  const chips=document.querySelector(`[data-tray="${i}"] .chips`);
+  const absent=characters().filter(c=>c.opening?.presence===false);
+  chips.innerHTML=absent.length?absent.map(c=>`<span class="chip" data-ch="${esc(c.id)}">${esc(c.name||c.id)}</span>`).join(''):'<span class="none">无</span>';
+  chips.querySelectorAll('.chip').forEach(ch=>ch.onpointerdown=ev=>startChipDrag(ev,i,ch));
+  renderSide(i,shot);
+}
+function facingAngle(f){return ({N:0,NE:45,E:90,SE:135,S:180,SW:225,W:270,NW:315})[f]??0;}
+function renderSide(i,shot){
+  const pick=document.querySelector(`[data-pick="${i}"]`);if(!pick)return;
+  const sel=arr(LEDGER._selected)[i];
+  if(!sel){pick.innerHTML='<h4>未选中人物</h4><div>点俯视图上的圆点，选坐/站、朝向，或移出该镜。</div>';}
+  else{
+    const c=characters().find(c=>c.id===sel);if(!c){pick.innerHTML='<h4>选中人物不存在</h4>';return;}
+    const s=c.opening||{};
+    pick.innerHTML=`<h4>${esc(c.name||c.id)} <span class="badge soft">${esc(c.subject||'无 Subject')}</span></h4>
+      <div>身份：${esc(c.role||'待补')} ｜ 依托物：${esc(objectName(s.anchor_object))} ｜ ${esc(sideName(s.side))}侧</div>
+      <div class="row"><span class="lbl">姿态</span><div class="seg">${POSTURES.map(([v,l])=>`<button data-act="posture" data-v="${v}" ${s.posture===v?'aria-pressed="true"':''} onclick="setState(${i},'${sel}','posture','${v}')">${l}</button>`).join('')}</div></div>
+      <div class="row"><span class="lbl">朝向</span><div class="rose">${FACINGS.map(([v,l],k)=>k===1?'<span class="mid">面朝</span>':`<button data-v="${v}" ${s.facing===v?'aria-pressed="true"':''} onclick="setState(${i},'${sel}','facing','${v}')">${l}</button>`).join('')}</div></div>
+      <div class="row"><span class="lbl">在场</span><button class="out" onclick="togglePresence(${i},'${sel}')">${s.presence===false?'拖回平面':'移出开场'}</button></div>`;
+  }
+  document.querySelector(`[data-sentence="${i}"]`).textContent=lightingLine();
+  document.querySelector(`[data-why="${i}"]`).textContent=(LEDGER?.evidence?.dialogue_source||'按剧本分镜与物件锚点推导；坐标为规划值，非成片实测。');
+  const live=document.querySelector(`[data-live="${i}"]`);
+  const issues=shotIssues(i,shot);
+  live.innerHTML=issues.length?`<ul class="live">${issues.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:'<ul class="live"><li class="ok">本镜文本层暂无问题</li></ul>';
+}
+function shotIssues(i,shot){
+  const out=[];const chars=characters();
+  if(!shot.lead_subject)out.push('视觉主焦点 lead_subject 待补');
+  for(const c of chars){
+    const s=c.opening||{};
+    if(s.presence!==false&&!xy(s)&&!objects().some(o=>o.id===s.anchor_object))out.push(`${c.name||c.id} 无坐标也无依托物`);
+  }
+  for(const d of arr(shot.dialogue)){
+    if(!d.speaker)out.push('有对白但 speaker 待补');
+    if(!d.text)out.push('speaker 已填但 text 待补');
+  }
+  return out;
+}
+function renderLocations(){
+  const box=$('locCards'),objs=objects();
+  if(!objs.length){box.innerHTML='<div class="card">尚无关卡物件。请补 objects（固定物/依托物）。</div>';return;}
+  box.innerHTML=objs.map(o=>{
+    const b=objBox(o);
+    const pic=arr(DETAIL?.pictures).find(p=>p.file&&/scene|location|room|street|shop|表/.test(p.role+' '+p.slot));
+    return `<div class="card"><div class="sc-h"><span class="sc-id">${esc(o.id)}</span><h3>${esc(o.name||o.id)}</h3><span class="badge soft">${esc(o.type||'未分类')}</span></div>
+      <div class="plate ${pic?'mini':''}">${pic?`<div class="pic"><img src="/file/${encodeURIComponent(pic.file)}" alt="场景图"><div class="pbox" data-lit="${esc(o.id)}"></div></div>`:'<div class="plate-empty">没有场景图 · 按设定提示词推算<em>图片应放在 images/&lt;地点名&gt;-sheet.png</em></div>'}</div>
+      <table><tr><th>属性</th><th>值</th></tr><tr><td>位置</td><td>${xy(o)?`(${Number(o.x).toFixed(1)}, ${Number(o.y).toFixed(1)})`:'待补'}</td></tr><tr><td>用途</td><td>${esc(o.location||'待补')}</td></tr><tr><td>来源</td><td>${esc(o.source||'待补')}</td></tr></table></div>`;
+  }).join('');
+}
+function renderWorkspaces(){
+  $('scriptBox').textContent=(MANIFEST?.title||'')+'\n'+((DETAIL?.id||'')+' '+(DETAIL?.title||''));
+  const shots=arr(DETAIL?.shots);
+  $('boardBox').innerHTML=shots.length?`<div class="shots-wall">${shots.map((s,i)=>`<div class="shot-card-mini"><div class="hd2">${i+1} · ${esc(s.time||'')} · ${esc(s.shot||'')}</div>
+    <div class="frame">${s.frame?`<img src="/file/${encodeURIComponent(s.frame)}" alt="抽帧">`:'<div class="plate-empty">无抽帧</div>'}</div>
+    <div class="bd"><b>${esc(s.action||'')}</b><br>${s.dialogue?`<i>「${esc(s.dialogue)}」</i><br>`:''}<span class="badge soft">${esc(s.camera||'')}</span></div></div>`).join('')}</div>`:'<div class="card">暂无分镜数据。</div>';
+  if($('promptBox').value!==(DETAIL?.prompt_txt||''))$('promptBox').value=DETAIL?.prompt_txt||'';
+  $('refsBox').innerHTML=arr(DETAIL?.pictures).length?`<table><tr><th>槽位</th><th>图</th><th>用途</th></tr>${arr(DETAIL.pictures).map(p=>`<tr><td>${esc(p.slot)}</td><td>${p.file?`<img src="/file/${encodeURIComponent(p.file)}" style="width:120px">`:'缺图'}</td><td>${esc(p.role)}</td></tr>`).join('')}</table>`:'<div class="card">暂无参考图。</div>';
+  $('mediaBox').innerHTML=`<div class="card"><p>正式成片：${DETAIL?.clip?`<a href="/file/${encodeURIComponent(DETAIL.clip)}" target="_blank">${esc(DETAIL.clip)}</a>`:'无'}</p>
+    <p>重生成版：${DETAIL?.regen?`<a href="/file/${encodeURIComponent(DETAIL.regen)}" target="_blank">${esc(DETAIL.regen)}</a>`:'无'}</p>
+    <p>QC：${DETAIL?.qc?`<a href="/file/${encodeURIComponent(DETAIL.qc)}" target="_blank">${esc(DETAIL.qc)}</a>`:'无'}</p>
+    <button class="btn" onclick="promote()">设为正式成片</button> <button class="btn pri" onclick="regenSegment()">重新生成</button></div>`;
+}
+function renderAll(){renderKpis();renderGate();renderSceneCards();renderLocations();renderWorkspaces();syncLedgerJSON();}
+function syncLedgerJSON(){$('ledgerJSON').value=JSON.stringify(LEDGER,null,2);}
+function syncFromLedger(){LEDGER._selected=[];$('ledgerJSON').value=JSON.stringify(LEDGER,null,2);}
+function ledgerEdited(){try{const v=JSON.parse($('ledgerJSON').value);LEDGER=v;markDirty(true);renderKpis();renderSceneCards();renderLocations();$('ledgerLocal').textContent='本地 JSON 已解析；旧报告已失效，须重新校验。';}catch(e){$('ledgerLocal').textContent='JSON 错误：'+e.message;}}
+
+/* =========================================================
+   交互：拖拽 / 选中 / 修改
+   ========================================================= */
+let DRAG=null;
+function startDrag(ev,i,c,node){
+  if(BUSY||ev.button!==0)return;ev.preventDefault();node.setPointerCapture(ev.pointerId);
+  node.classList.add('lifted');(LEDGER._selected||(LEDGER._selected=[]))[i]=c.id;
+  const room=node.closest('.room');DRAG={kind:'token',i,c,node,room};
+  node.onpointermove=e=>moveDrag(e);node.onpointerup=endDrag;node.onpointercancel=endDrag;
+}
+function startChipDrag(ev,i,chip){
+  if(BUSY||ev.button!==0)return;ev.preventDefault();
+  const ghost=chip.cloneNode(true);ghost.classList.add('lifted');document.body.appendChild(ghost);
+  DRAG={kind:'chip',i,c:characters().find(c=>c.id===chip.dataset.ch),chip,ghost};
+  moveChip(ev);window.onpointermove=moveChip;window.onpointerup=endChip;
+}
+function moveChip(ev){if(!DRAG||DRAG.kind!=='chip')return;DRAG.ghost.style.left=(ev.clientX+10)+'px';DRAG.ghost.style.top=(ev.clientY+10)+'px';
+  for(const r of document.querySelectorAll('[data-room]'))r.classList.toggle('over',hit(r,ev.clientX,ev.clientY));}
+function endChip(ev){
+  if(!DRAG||DRAG.kind!=='chip')return;window.onpointermove=null;window.onpointerup=null;
+  const room=document.querySelector(`[data-room="${DRAG.i}"]`),inside=room&&hit(room,ev.clientX,ev.clientY);
+  DRAG.ghost.remove();document.querySelectorAll('.room.over').forEach(r=>r.classList.remove('over'));
+  if(inside){const box=room.getBoundingClientRect(),px=(ev.clientX-box.left)/box.width*100,py=(ev.clientY-box.top)/box.height*100;placeAt(DRAG.i,DRAG.c,px,py,true);}
+  DRAG=null;
+}
+function hit(el,x,y){const b=el.getBoundingClientRect();return x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;}
+function moveDrag(ev){
+  if(!DRAG||DRAG.kind!=='token')return;const {room,node}=DRAG,b=room.getBoundingClientRect();
+  const px=Math.max(0,Math.min(100,(ev.clientX-b.left)/b.width*100)),py=Math.max(0,Math.min(100,(ev.clientY-b.top)/b.height*100));
+  node.style.left=px+'%';node.style.top=py+'%';
+  const o=nearestObject(px,py);room.querySelectorAll('.thing').forEach(t=>t.classList.toggle('lit',o&&t.dataset.obj===o.id));
+  DRAG.last={px,py};
+}
+function endDrag(){
+  if(!DRAG||DRAG.kind!=='token')return;const {node,room,i,c,last}=DRAG;
+  node.onpointermove=null;node.onpointerup=null;node.onpointercancel=null;node.classList.remove('lifted');
+  room.querySelectorAll('.thing').forEach(t=>t.classList.remove('lit'));
+  if(last)placeAt(i,c,last.px,last.py,false);
+  DRAG=null;
+}
+function placeAt(i,c,px,py,fromTray){
+  const s=openingOf(c),o=nearestObject(px,py),side=sideOf(o,px,py);
+  if(o){s.anchor_object=o.id;s.side=side;s.x=Math.round(px*10)/10;s.y=Math.round(py*10)/10;
+    const f=facingTo(o,{x:px,y:py});if(f)s.facing=f;}
+  else{s.x=Math.round(px*10)/10;s.y=Math.round(py*10)/10;}
+  if(fromTray)s.presence=true;
+  markDirty(true);renderSceneCards();
+}
+function setPose(i){const t=document.querySelector(`[data-pick="${i}"]`);return t?t.dataset.ch:null;}
+function setState(i,cid,field,value){
+  const c=characters().find(c=>c.id===cid);if(!c)return;openingOf(c)[field]=value;markDirty(true);renderSceneCards();
+}
+function togglePresence(i,cid){
+  const c=characters().find(c=>c.id===cid);if(!c)return;const s=openingOf(c);s.presence=s.presence===false;markDirty(true);renderSceneCards();
+}
+function copySentence(i){const t=document.querySelector(`[data-sentence="${i}"]`)?.textContent||'';navigator.clipboard?.writeText(t).then(()=>toast('走位句已复制')).catch(()=>toast('复制失败'));}
+function work(name){
+  document.querySelectorAll('.work-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.w===name));
+  document.querySelectorAll('.work-pane').forEach(p=>p.classList.toggle('on',p.id==='work-'+name));
+}
+
+/* =========================================================
+   服务端交互
+   ========================================================= */
+async function reloadAll(){
+  try{
+    MANIFEST=await api('/api/manifest');fillSelects();
+    const select=$('segSelect');const target=SEG||select.value;
+    if(target)await loadSegment(target);
+    toast('数据已刷新');
+  }catch(e){toast('刷新失败：'+e.message);}
+}
+function fillSelects(){
+  const seg=$('segSelect'),ep=$('epSelect');
+  seg.innerHTML=arr(MANIFEST?.episodes).flatMap(e=>arr(e.segs).map(s=>`<option value="${esc(s.id)}">${esc(e.id)} · ${esc(s.id)} ${esc(s.title||'')}</option>`)).join('');
+  ep.innerHTML=arr(MANIFEST?.episodes).map(e=>`<option value="${esc(e.id)}">${esc(e.id)} · ${esc(e.title||'')}</option>`).join('');
+}
+function selectSegment(seg){if(!seg)return;loadSegment(seg);}
+async function selectEpisode(ep){
+  if(!ep)return;const e=arr(MANIFEST?.episodes).find(e=>e.id===ep);
+  if(e&&e.segs?.length)await loadSegment(e.segs[0].id);
+}
+async function loadSegment(seg,force){
+  if(BUSY)return;if(DIRTY&&!force&&!confirm('本地工作稿尚未导出，切换将丢弃改动。继续？'))return;
+  BUSY=true;SEG=seg;
+  try{
+    const [detail,cont]=await Promise.all([api('/api/segment/'+encodeURIComponent(seg)),api('/api/continuity/'+encodeURIComponent(seg))]);
+    DETAIL=detail;REPORT=cont.report||null;
+    const local=loadDraftLocal();
+    LEDGER=local||cont.ledger||{schema:'wumao-continuity/1.0',segment:seg,scene:'',objects:[],characters:[],shots:[]};
+    LEDGER._selected=[];DIRTY=!!local;markDirty(DIRTY);
+    $('titleSub').textContent=(MANIFEST?.title||'剧目')+' / '+seg+' / '+(LEDGER.scene||DETAIL?.title||'场景待补');
+    const ep=arr(MANIFEST?.episodes).find(e=>arr(e.segs).some(s=>s.id===seg));
+    if(ep)$('epSelect').value=ep.id;$('segSelect').value=seg;
+    $('segMeta').textContent=`时长 ${DETAIL?.duration||0}s ｜ 参考图 ${arr(DETAIL?.pictures).length} 张 ｜ 状态 ${REPORT?.status||'未校验'}`;
+    renderAll();
+    // 剧本另取
+    if(ep){const md=await api('/api/episode/'+encodeURIComponent(ep.id));$('scriptBox').textContent=md.markdown||'无剧本';}
+  }catch(e){toast('读取失败：'+e.message);}
+  finally{BUSY=false;}
+}
+function ledgerForSave(){const copy=JSON.parse(JSON.stringify(LEDGER));delete copy._selected;return copy;}
+async function postLedger(compile){
+  if(BUSY)return;let body;
+  try{body={ledger:ledgerForSave(),compile:!!compile};}catch(e){toast('台账序列化失败：'+e.message);return;}
+  BUSY=true;
+  try{
+    const r=await api('/api/continuity/'+encodeURIComponent(SEG),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){REPORT=r.report||null;if(r.ledger){LEDGER=r.ledger;LEDGER._selected=[];markDirty(false);}
+      toast(compile?'已同步提示词；仅文本检查，成片未核验':'草稿已保存到服务端');renderAll();}
+    else toast('未通过：'+(r.error||JSON.stringify(r.report?.errors||[]).slice(0,200)));
+  }catch(e){toast('保存失败：'+e.message);}
+  finally{BUSY=false;}
+}
+function saveLedger(){postLedger(false);}
+function saveAndCompile(){postLedger(true);}
+async function savePrompt(){
+  const text=$('promptBox').value;
+  const r=await api('/api/segment/'+encodeURIComponent(SEG)+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt_txt:text})});
+  toast(r.ok?'提示词已保存；台账哈希已失效，须重新校验':'保存失败');if(r.ok)loadSegment(SEG,true);
+}
+async function regenSegment(){
+  if(REPORT?.status!=='pass'){toast('质量门未通过，禁止生成');return;}
+  const r=await api('/api/segment/'+encodeURIComponent(SEG)+'/regen',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  toast(r.ok?'已提交生成任务 '+r.job:'生成被拒绝：'+(r.error||''));
+}
+async function promote(){
+  const r=await api('/api/segment/'+encodeURIComponent(SEG)+'/promote',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  toast(r.ok?'已设为正式成片':'失败：'+(r.error||''));
+}
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveLedger();}});
+const qs=new URLSearchParams(location.search);
+if(qs.get('seg'))SEG=qs.get('seg').toUpperCase();
+reloadAll().then(()=>{if(qs.get('selftest')==='1')runSelfTest();});
+
+/* 浏览器内自检：验证拖拽吸附、朝向、姿态、出入场、导出净化；不污染本地草稿 */
+function runSelfTest(){
+  const out=[],backup=JSON.parse(JSON.stringify(LEDGER));
+  const ok=(name,cond)=>out.push((cond?'PASS':'FAIL')+' '+name);
+  try{
+    const c=characters()[0],o=objects()[0];
+    ok('台账含人物与物件',!!(c&&o));
+    if(c&&o){
+      placeAt(0,c,o.x+4,o.y+4,false);
+      ok('拖拽吸附到最近物件',c.opening.anchor_object===o.id);
+      ok('拖拽写入坐标',typeof c.opening.x==='number'&&typeof c.opening.y==='number');
+      setState(0,c.id,'facing','SE');ok('八方位朝向切换',c.opening.facing==='SE');
+      setState(0,c.id,'posture','seated');ok('坐站姿态切换',c.opening.posture==='seated');
+      togglePresence(0,c.id);ok('移出开场',c.opening.presence===false);
+      togglePresence(0,c.id);ok('拖回开场',c.opening.presence===true);
+    }
+    ok('导出不含内部字段',!('_selected' in ledgerForSave()));
+    ok('质量门已读取',!!REPORT);
+  }catch(e){out.push('FAIL 异常 '+e.message);}
+  LEDGER=backup;localStorage.removeItem(DRAFT_KEY());
+  const box=document.createElement('pre');box.id='selftest';
+  box.style.cssText='position:fixed;left:0;top:0;z-index:999;background:#fff;color:#000;padding:10px;font:12px monospace';
+  box.textContent=out.join('\n');document.body.prepend(box);
+}
+</script>
+</body>
+</html>

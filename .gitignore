@@ -1,0 +1,28 @@
+# Python runtime
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and developer backups
+*.log
+*.bak
+*.bak-*
+*.tmp
+
+# Project runtime data (not part of the skill suite)
+/导演台数据/
+/_tmp/
