@@ -30,7 +30,7 @@ import tempfile
 import time
 from pathlib import Path
 
-CONSOLE_VERSION = "1.4.0"
+CONSOLE_VERSION = "1.5.0"
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = Path(__file__).resolve().parent
 PAYLOAD = (
@@ -87,13 +87,28 @@ DATA_README = """# 导演台数据 · 本项目专有
 #         ④ 不再把项目路径当命令行参数传给 Python（改用 pushd + 相对路径），
 #            避免非 936 代码页的机器上中文路径被编码打碎；
 #         ⑤ 端口已被占用时不再报错退出，直接开浏览器。
+# 2026-11-23 修（用户实测：「端口好重复了，只要有其他相同任务再跑就使用重复的端口，
+#   然后打开是同一个内容」）：固定 8770 在多项目并行时撞口——先开的占着 8770，
+#   后开的双击 bat 探测到 BUSY 直接开浏览器，打开的却是先开项目那个台。
+#   改法：bat 启动时探测 8770~8869 第一个空闲端口作为 %PORT%，director_server.py
+#   收到 --port N 若被占再自动顺延；每个项目的台跑在互不冲突的端口上。
+#   端口探测用 Python socket（连本机 connect_ex），不依赖 netstat 代码页。
+# 2026-11-23 二次修（用户实测：横幅说「顺延到 8771」，浏览器却仍开 8770）：
+#   病根 = bat 预探测端口后先开浏览器，服务真正绑定前这几秒里端口被别的进程抢走，
+#   server 顺延到下一个口 → 浏览器指向的 8770 已是别人的台。两个组件各自探测端口，
+#   天然有 TOCTOU 竞态。
+#   改法（v4）：bat 不再探测端口、不再开浏览器；只做 --port auto 启动服务。
+#   端口真相源唯一 = 服务端 _resolve_port() 实际绑定的口：绑定成功后自己
+#   webbrowser.open(实际URL) 并写 导演台数据/port.json。浏览器打开的必是本项目台。
 LAUNCHER_TEXT = r"""@echo off
 setlocal EnableExtensions
 rem ============================================================
-rem  导演台启动器 v2（自愈版）
+rem  导演台启动器 v4（服务端权威端口版）
 rem  修 1：PATH 缺 System32 导致 chcp/where/timeout 报「不是内部或外部命令」
 rem  修 2：找不到 Python（多路径探测 + 版本校验，>=3.9）
-rem  修 3：端口占用时直接开浏览器，不报错
+rem  修 3：端口由服务端绑定后决定并自己开浏览器，bat 绝不预探测/预开浏览器
+rem        （v3 预探测与实际绑定存在竞态，会打开先开项目的台）
+rem  修 4：实际端口写进 导演台数据/port.json，外部脚本读它，勿自行猜端口
 rem ============================================================
 if not defined SystemRoot set "SystemRoot=C:\Windows"
 set "PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem;%PATH%"
@@ -124,24 +139,21 @@ if not defined PY (
   exit /b 1
 )
 
-rem ---------- 端口占用 ----------
-set "BUSY="
-for /f "tokens=*" %%L in ('netstat -ano ^| findstr /c:"LISTENING" ^| findstr ":8770 "') do set "BUSY=1"
-if defined BUSY (
-  echo [i] 8770 端口已被占用，导演台大概已经在跑了。
-  echo     直接打开 http://127.0.0.1:8770/board
-  start "" http://127.0.0.1:8770/board
-  pause
-  exit /b 0
-)
+rem ---------- 端口策略（v4 · 服务端权威）----------
+rem 端口由服务端绑定成功后决定：--port auto 从 8770 起找空闲口，被占自动顺延。
+rem bat 绝不预探测端口、绝不提前开浏览器——v3 曾因预探测与实际绑定竞态，
+rem 导致浏览器停在别人占着的 8770、本项目却跑在 8771（用户实测）。
+rem 现在浏览器由服务端绑定成功后自己打开，地址 = 它实际监听的口；
+rem 实际端口同时写入 导演台数据/port.json 供外部脚本读取。
 
 echo ============================================================
 echo  导演台 - %PROJ%
-echo  地址：http://127.0.0.1:8770/board
 echo  解释器：%PY%
 echo  关闭本窗口即停止服务
+echo  端口由服务端自动选择；启动后看下方横幅的实际地址，
+echo  浏览器会自动打开该地址（不用手写 8770，也不认预探测结果）。
+echo  实际端口另存于 导演台数据\port.json。
 echo ============================================================
-start "" /min cmd /c "%SystemRoot%\System32\timeout.exe /t 3 >nul & start "" http://127.0.0.1:8770/board"
 
 rem ---------- 定位程序目录（防代码页不对时中文目录名读不出来）----------
 set "CDIR=%~dp0导演台"
@@ -156,7 +168,7 @@ if not exist "%CDIR%\director_server.py" (
   exit /b 1
 )
 pushd "%CDIR%"
-"%PY%" director_server.py --root ".." --port 8770
+"%PY%" director_server.py --root ".." --port auto
 set "RC=%ERRORLEVEL%"
 popd
 
@@ -185,7 +197,7 @@ LAUNCHER_ENCODING = "gbk"  # 中文 Windows 的 cmd 按 ANSI(936) 读批处理�
 
 README_TEXT = r"""# 导演台 · 项目内置版
 
-双击项目根目录的 **`启动导演台.bat`** 即可用（默认 http://127.0.0.1:8770/board）。
+双击项目根目录的 **`启动导演台.bat`** 即可用：端口由服务端绑定成功后自动选择（8770 被占就顺延），**浏览器会自动打开实际地址**，以窗口横幅为准；实际端口另存于 `导演台数据/port.json`。不要手动拼 8770 或看预探测结果。
 
 本目录由 `wumao-short-drama-director/scripts/install_director_console.py` 生成，
 **不要手改**：改过的文件会在下次安装时被备份成 `旧版本备份/` 里的副本。
@@ -234,7 +246,8 @@ python <技能目录>/scripts/install_director_console.py --root . --check
 | 反复提示找不到 Python，但机器上明明装了 | 没进 PATH，且不在探测列表里 | 探测顺序：`python` → `python3` → `py` → `%LOCALAPPDATA%\Programs\Python\Python3*` → `%ProgramFiles%\Python3*` → `C:\Python3*` → `D:\trae-python\tools\python` → `%USERPROFILE%\.workbuddy\binaries\python\versions\*`。都找不到才报错，并提示你把 `set "PY="` 改成绝对路径 |
 | 提示 Python 版本不够 | 装的是 3.8 及以下 | 探测时会校验 `>=3.9`，低版本自动跳过继续找下一个 |
 | 双击后窗口闪一下就关 | 程序文件缺失或路径被改 | 跑 `python 导演台/director_server.py --root . --check` 看具体缺什么 |
-| 8770 端口被占用 | 上次的窗口没关干净 | 新版会直接打开浏览器并退出，不再报错；要换端口用 `--port 8771` |
+| 8770 端口被占用 | 别的导演台/其他 AI 工具占着 | 新版服务端自动顺延到空闲口并**自己打开实际地址**，不用管；地址以窗口横幅或 `导演台数据/port.json` 为准 |
+| 横幅说顺延到 8771，浏览器却停在 8770 | 旧版 v3 bat 预探测端口后提前开浏览器，与服务真实绑定竞态 | 重跑安装升级到 v4（bat 不再预探测/预开，服务端绑定后自己开）；这是已知 bug，已修 |
 | 人物面板空、原著面板 0 章 | 缺两样数据源 | 人物要 `02_assets/CHARACTERS.json`（`characters` 数组 + `relations` 数组，字段 `id/name/role/rank/identity/appearance/outfit/voice/note/anchors`）；原著要 `00_source/小说.md` 或 `00_source/原著.md`（`.txt` 不认），章标题写成 `第N章 标题` 独占一行 |
 | 分镜卡空、镜头 0 个 | H3 稿没有 `[mm:ss]` 行首时间码（那是 Seedance 写法） | 2026-11-18 起服务端会从 `prompt.md` 的「段落卡」表格兜底解析，不再空。前提是该段 `prompt.md` 里有 `| 镜 | 秒 | 景别 | ...` 表 |
 | 连续性显示「已拦住」 | 参考图还没配或还没出 | `refs.json` 缺 `pictures` 或图文件不存在。出图后按 `S01/refs.example.json` 填；`prompt.txt` 里写 `<Picture 1> (文件名.png)` 才算接上 |
@@ -481,9 +494,12 @@ def check(root: Path) -> int:
             direct_target = f"{TARGET_DIR}\\director_server.py" in text
             via_directory = (f'set "CDIR=%~dp0{TARGET_DIR}"' in text and
                              'pushd "%CDIR%"' in text and
-                             '"%PY%" director_server.py --root ".." --port 8770' in text)
+                             '"%PY%" director_server.py --root ".." --port auto' in text)
+            # v4 硬约束：bat 不得再预探测端口或提前开浏览器（TOCTOU 竞态根因）
+            if "for /L %%P in (8770,1,8869)" in text or "start \"\" http://127.0.0.1:" in text:
+                problems.append(f"{LAUNCHER} 是旧版（预探测端口/预开浏览器），应重跑安装升级到 v4")
             if not (direct_target or via_directory):
-                problems.append(f"{LAUNCHER} 未指向 {TARGET_DIR}/director_server.py")
+                problems.append(f"{LAUNCHER} 未指向 {TARGET_DIR}/director_server.py（或未用 --port auto）")
         except (UnicodeDecodeError, OSError):
             problems.append(f"{LAUNCHER} 不是 GBK 编码，中文会乱码")
     data_root = root / DATA_DIR
@@ -523,8 +539,10 @@ def self_test() -> bool:
             print("[!] 启动脚本不是 GBK，中文会乱码"); return False
         if ("set \"CDIR=%~dp0导演台\"" not in text or
                 'pushd "%CDIR%"' not in text or
-                '"%PY%" director_server.py --root ".." --port 8770' not in text):
-            print("[!] 启动脚本中文表述或路径不对"); return False
+                '"%PY%" director_server.py --root ".." --port auto' not in text):
+            print("[!] 启动脚本中文表述或路径不对（应为 v4 --port auto）"); return False
+        if "for /L %%P in (8770,1,8869)" in text or "start \"\" http://127.0.0.1:" in text:
+            print("[!] 启动脚本仍是旧版 v3（预探测端口/预开浏览器）"); return False
         if not (root / PROJECT_INFO).is_file():
             print("[!] 未创建 PROJECT_INFO 模板"); return False
         if not (root / TARGET_DIR / README_NAME).is_file():

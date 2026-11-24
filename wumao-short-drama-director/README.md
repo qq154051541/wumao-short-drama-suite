@@ -1,6 +1,6 @@
 # Wumao Short-Drama Director · 中文短剧导演技能 V1.1.0
 
-![规则库](https://img.shields.io/badge/规则库-60%20份-4B8BBE) ![文件](https://img.shields.io/badge/文件-174--4B8BBE) ![机检](https://img.shields.io/badge/机检-C1~C41-4B8BBE)
+![规则库](https://img.shields.io/badge/规则库-61%20份-4B8BBE) ![文件](https://img.shields.io/badge/文件-175--4B8BBE) ![机检](https://img.shields.io/badge/机检-C1~C41-4B8BBE)
 
 面向 **9:16 中文真人短剧和漫剧** 的导演技能包，覆盖创意立项、剧本、资产提示词、分镜、投喂稿和出稿质检。剧本使用中文，采用普通话对白与简体中文字幕。MiniMax-H3 的英文技术正文只用于模型投喂。广告片、宣传片、外语剧、长剧、电影、纯 MV 或独立 PREVIS 不在总控范围内。
 覆盖：**Asset-First 六阶段管线**（立项锁定 → 五阶门控剧本 → 数字资产包 → 分镜 → 视频提示词文本装配 → 独立质检）。
@@ -23,7 +23,7 @@
 > - **I 画风锁**。推送候选卡供确认。
 >
 > **四层纵深架构**：
-> - **L0 总控层**：`wumao-short-drama-director`（〇·1 素材来源 / **素材形态 M0·M1·M2** / 锁系统 / **60 份规则库（含 style-bible 画风锁知识库 8 份）** / 七段式 / C1~C26 机检（**含增量主码 C27a~d 对话戏节奏与台词密度下限 / C28a~c 台词机械化探测 / C29 资产状态偏离 / C30a~d 外挂指纹与交接探针 · 编号不重排**） / P0~P2 门禁 / **★场面调度与站位决策层 `blocking-direction.md`** / **★素材形态与接线单 `asset-delivery-modes.md`**）
+> - **L0 总控层**：`wumao-short-drama-director`（〇·1 素材来源 / **素材形态 M0·M1·M2** / 锁系统 / **61 份规则库（含 style-bible 画风锁知识库 8 份）** / 七段式 / C1~C26 机检（**含增量主码 C27a~d 对话戏节奏与台词密度下限 / C28a~c 台词机械化探测 / C29 资产状态偏离 / C30a~d 外挂指纹与交接探针 · 编号不重排**） / P0~P2 门禁 / **★场面调度与站位决策层 `blocking-direction.md`** / **★素材形态与接线单 `asset-delivery-modes.md`**）
 > - **L1 决策层**：`sd-decision-engine`（情境映射 E01~E15 + 80/15/5 权重 + 情绪锚点表 + 构图雷区 A/B 双态白名单）——回答"这场戏该用什么镜头"
 > - **L2 生产层**：`sd-recon-engine`（素材采风）· `sd-script-engine`（+反捧杀/创作笔记/五视角审稿/会诊警报/台词七维/节奏矩阵）· `sd-asset-engine`（+场景连续性/道具单实例锁/人群调度/**坐标系与 SET_STATE 状态变体**/**按素材形态产出 + 接线单**）· `sd-storyboard-engine`（+段内衔接5维/运镜5模式/**★故事板图·面板链**）· `sd-combat-engine`（+摄影机行为锁/战场速查）· `sd-xuanhuan-engine` · `sd-real-engine`
 > - **L3 交付层**：`sd-feed-engine`（A/B/C 输出模式 + 投喂层闸门**（闸门 6 = 编号一致性 + 素材形态一致性）** + 素材映射/人物锚定 + **《素材接线单》** + 多段衔接 + 工程语言清洗）· `sd-qc-engine`（+后期音乐与声音设计：BGM Cue Sheet / 音乐搜索词 / AI 音乐提示词 / 版权检查；**一致性门按素材形态改判**）
@@ -140,7 +140,7 @@ python3 scripts/check_package.py
 
 > ⛔ 本包**无编译产物**——改规则 = 直接改原文，改完跑一次 `check_package.py` 即可。（原「运行态微核 `agent-system-core.md` + 编译器 `build_core.py`」已于 2026-10-13 整环移除，见 `CHANGELOG.md`。）
 
-检查：SKILL frontmatter 完整性、references 清单（60 份，含 style-bible）、语义回归（模型口径残留 / 4 View 口径 / Prompt 格式命名 / LEGACY 标记 / README-SKILL 版本一致 / **素材来源层完整性（㉑）** / **场面调度权威完整性** / **故事板图标准完整性** / **场景空间事实五件事完整性** / **素材形态权威完整性** / **方言外挂** / **打斗规程吸收** / **三份出图模板完整性——九宫格/立绘/道具** / **机检 C 码一致性——脚本 ⊆ 手册** / **打戏护栏域——两份打戏新库 + C21 三处互锁** / **微核移除固化域（[E*15·m]）**）。
+检查：SKILL frontmatter 完整性、references 清单（61 份，含 style-bible）、语义回归（模型口径残留 / 4 View 口径 / Prompt 格式命名 / LEGACY 标记 / README-SKILL 版本一致 / **素材来源层完整性（㉑）** / **场面调度权威完整性** / **故事板图标准完整性** / **场景空间事实五件事完整性** / **素材形态权威完整性** / **方言外挂** / **打斗规程吸收** / **三份出图模板完整性——九宫格/立绘/道具** / **机检 C 码一致性——脚本 ⊆ 手册** / **打戏护栏域——两份打戏新库 + C21 三处互锁** / **微核移除固化域（[E*15·m]）**）。
 
 ---
 

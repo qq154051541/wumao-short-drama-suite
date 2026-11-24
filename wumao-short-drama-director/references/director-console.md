@@ -22,10 +22,10 @@
 ## 一、启动
 
 ```bash
-# 基本启动（默认 8770 端口）
+# 基本启动（默认 auto：8770 空闲就用，被占自动顺延 8771/8772 …）
 python scripts/director_server.py --root <项目目录>
 
-# 指定端口与剧名（剧名影响成片命名与标题栏）
+# 指定端口与剧名（剧名影响成片命名与标题栏）；固定 N 被占时同样自动顺延
 python scripts/director_server.py --root <项目目录> --port 8770 --title "我不是神豪"
 
 # 只做环境自检（不启服务，CI 友好）
@@ -35,7 +35,30 @@ python scripts/director_server.py --root <项目目录> --check
 python scripts/director_server.py --root <任意目录> --self-test
 ```
 
-浏览器打开 `http://127.0.0.1:8770/board`（`/`、`/board.html` 同地址）。
+启动横幅会打印实际地址 `http://127.0.0.1:<实际端口>/board` + 数据根目录；**服务端绑定成功后会自己打开这个实际地址**，并把端口写进 `导演台数据/port.json`。浏览器打开的必是本项目台。
+
+### 多项目并行撞口（2026-11-23 二次修订 · v4）
+
+病根链（两次实测）：
+1. **v2**：所有台写死 8770。A 占着，B 探测到占用直接开浏览器 → 打开 A 的台。
+2. **v3（半修）**：bat 预探测 8770~8869 取空闲口 → **先开浏览器** → 几秒后 server 才绑定；这段窗口里端口被别的进程抢走，server 顺延到下一个口 → **浏览器停在 8770（别人的台），本项目跑在 8771**。用户实测：横幅说「顺延到 8771」，浏览器却仍开 `8770/?view=characters&tab=script`。根因 = 两个组件各自探测端口的 TOCTOU 竞态。
+
+**v4 现行策略（端口真相源唯一）**：
+- **服务端权威**：`director_server.py` 用 `_resolve_port()` 绑定成功后，① 自己 `webbrowser.open(实际URL)`，② 写 `导演台数据/port.json`（含 port/url/root/title/pid）。浏览器只认服务实际监听的口，竞态消失。
+- **bat 只启动**：`启动导演台.bat` v4 只探测 Python + `--port auto` 启动服务，**不预探测端口、不提前开浏览器**（旧行为已作为 bug 在自检中拦截）。
+- **脚本/CI**：加 `--no-browser` 关掉自动开浏览器；从 `导演台数据/port.json` 读实际地址即可。
+- 端口 ≠ 项目：同端口只认先启动的实例；本台数据只写本项目 `导演台数据/`，互不串。
+- **占用 8770 的不一定是本包项目**：2026-11-23 实测占口者是另一 AI 工具（TRAE SOLO）自带的台（标题「长夜之火」）。不 kill 它，本包项目自动顺延，浏览器由服务端指向顺延后的实际口。
+
+**排查占口进程**（确认 8770 到底是谁）：
+```powershell
+Get-NetTCPConnection -LocalPort 8770 -State Listen | ForEach-Object {
+  Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)" | Select ProcessId,Name,CommandLine
+}
+```
+命令行里的 `--root`/`--title` 能直接判定它属于哪个项目/工具。
+
+> ⚠ 老 bat（v2/v3）已废弃：v2 被占直接开别人的台；v3 预探测与实际绑定竞态。重跑 `python scripts/install_director_console.py --root .` 升级到 v4。判断法：bat 里若还有 `for /L %%P in (8770,1,8869)` 或 `start "" http://127.0.0.1:` 就是旧版。
 
 **自检输出示例**：
 ```
@@ -368,16 +391,78 @@ python scripts/install_director_console.py --root <项目目录> --check
 
 ## 七、Windows 一键启动模板
 
-项目根放 `启动导演台.bat`：
+项目根放 `启动导演台.bat`（v4 服务端权威端口：**bat 不预探测、不预开浏览器**）：
 ```bat
 @echo off
-chcp 65001 >nul
+setlocal EnableExtensions
+if not defined SystemRoot set "SystemRoot=C:\Windows"
+set "PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem;%PATH%"
+"%SystemRoot%\System32\chcp.com" 936 >nul 2>nul
 cd /d "%~dp0"
-where python >nul 2>nul && (set PY=python) || (set PY=py -3)
-start "" "http://127.0.0.1:8770/board"
-%PY% "%~dp0<技能目录>\scripts\director_server.py" --root "%~dp0." --port 8770
+
+rem ---------- 探测 Python 3.9+（命令名 → 常见安装目录 → py 启动器 → 本机已知路径）----------
+set "PY="
+call :probe python
+if not defined PY call :probe python3
+if not defined PY call :probe py
+if not defined PY for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python3*") do if not defined PY call :probe "%%~D\python.exe"
+if not defined PY for /d %%D in ("%ProgramFiles%\Python3*") do if not defined PY call :probe "%%~D\python.exe"
+if not defined PY if exist "D:\trae-python\tools\python\python.exe" call :probe "D:\trae-python\tools\python\python.exe"
+if not defined PY for /d %%D in ("%USERPROFILE%\.workbuddy\binaries\python\versions\*") do if not defined PY call :probe "%%~D\python.exe"
+if not defined PY (
+  echo [x] 没找到 Python 3.9 以上。把 py -3 --version 的结果发我，或重装时勾选 Add to PATH。
+  pause
+  exit /b 1
+)
+
+rem ---------- 端口策略（v4）：交给服务端绑定后决定，bat 不碰端口 ----------
+rem v3 曾在 bat 预探测端口后先开浏览器，服务真正绑定前端口被抢 → 浏览器停在别人的台。
+rem 现在服务端 --port auto 自己找空闲口、绑定成功后自己开浏览器 + 写 port.json。
+
+rem ---------- 定位程序目录（防代码页不对时中文目录名读不出来）----------
+set "CDIR=%~dp0导演台"
+if not exist "%CDIR%\director_server.py" set "CDIR=%~dp0director"
+if not exist "%CDIR%\director_server.py" (
+  echo [x] 找不到程序目录里的 director_server.py。回到技能目录重跑安装脚本。
+  pause
+  exit /b 1
+)
+pushd "%CDIR%"
+
+echo ============================================================
+echo  导演台 - 数据根：..
+echo  服务端绑定后自己开浏览器；实际地址看下方横幅 / 导演台数据\port.json
+echo  关闭本窗口即停止服务
+echo ============================================================
+"%PY%" director_server.py --root ".." --port auto
+set "RC=%ERRORLEVEL%"
+popd
+
+echo.
+if not "%RC%"=="0" echo [x] 导演台异常退出，退出码 %RC%。把上面几行报错发我。
+echo [i] 服务已退出
 pause
+exit /b 0
+
+rem ---------- 子程序：验证一个候选 Python ----------
+:probe
+if exist "%~1" (
+  "%~1" -c "import sys;sys.exit(0 if sys.version_info>=(3,9) else 1)" >nul 2>nul
+  if not errorlevel 1 set "PY=%~1"
+  exit /b 0
+)
+for /f "delims=" %%P in ('where %~1 2^>nul') do (
+  if not defined PY (
+    "%%P" -c "import sys;sys.exit(0 if sys.version_info>=(3,9) else 1)" >nul 2>nul
+    if not errorlevel 1 set "PY=%%P"
+  )
+)
+exit /b 0
 ```
+
+> ⚠ 老 v2/v3 bat 已废弃（v2 打开别人的台；v3 预探测与绑定竞态）。跑一次
+> `python scripts/install_director_console.py --root .` 即升级为 v4。判断法：bat 里若还有
+> `for /L %%P in (8770,1,8869)` 或 `start "" http://127.0.0.1:` 就是旧版。
 
 ---
 
@@ -399,7 +484,7 @@ pause
 导演台的定位是**生成视频之前交给导演的审阅件**，不是生成之后的看板。默认顺序：
 
 1. **AI 跑完全部前置**：原著拆章 → 改编映射 → 分集剧本 → 人物/道具/场景锚图与提示词 → 逐镜 H3 提示词 → 参考图接线 → 连续性台账。
-2. **开工导演台**：`python scripts/director_server.py --root <项目> --port 8770`，把 `/board` 六视图填满真实数据。
+2. **开工导演台**：`python scripts/director_server.py --root <项目>`（端口默认 auto：8770 被占自动顺延；服务端绑定成功后自己开浏览器 + 写 `导演台数据/port.json`，开台前核对横幅项目名），把 `/board` 六视图填满真实数据。
 3. **导演审阅与修改**：总览核对风格/集数/时长/红果标题封面；剧本概览核对改编取舍；人物角色核对外形与主配；道具场景核对锚图；分集信息逐镜看提示词与参考图。
 4. **只有导演说“可以出片了”才生成**：`/api/segment/<SEG>/regen` 是显式动作，界面不提供自动批量跑；未接入 `tools/submit_seg.py` 时按钮如实显示“不会出片”。
 

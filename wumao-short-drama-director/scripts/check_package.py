@@ -123,7 +123,7 @@ import warnings
 
 VERSION = "1.1.0"                       # 对外发布版本号（卡片 / 市场展示口径）
 INTERNAL_VERSION = "1.0.0"         # 内部迭代号（正文沿革口径，仅作标记）
-EXPECTED_REFS = 60   # 递归计数（41 份顶层规则库 + style-bible 8 份）。⚠️ 口径：SKILL.md 对外声明必须与本常量**逐字相等**（元规则四：只锁常量）。2026-10-22 新增 blooper-prevention-playbook.md（成片穿帮防治军规）后由 50 升至 51；2026-10-24 新增 crowd-behavior-direction.md 升到 52；2026-11-03 P13 剥离 H3 支线（h3-adapter.md 独立成包）回落至 51；2026-11-15 新增 expression-motion-prompt-bank.md（表情/动作成品短语库）由 48 升至 49；2026-11-15 P16 新增 camera-movement-prompt-bank.md（运镜）与 asset-image-prompt-bank.md（资产出图）由 49 升至 51；2026-11-15 P17 新增 novel-to-shortdrama-adaptation.md（小说改编）与 character-visual-style-lock.md（角色造型锁）由 51 升至 53；2026-11-15 P19 新增 prompt-quality-enhancement.md（提示词质量增强层）由 53 升至 54。
+EXPECTED_REFS = 61   # 递归计数（42 份顶层规则库 + style-bible 8 份）。⚠️ 口径：SKILL.md 对外声明必须与本常量**逐字相等**（元规则四：只锁常量）。2026-10-22 新增 blooper-prevention-playbook.md（成片穿帮防治军规）后由 50 升至 51；2026-10-24 新增 crowd-behavior-direction.md 升到 52；2026-11-03 P13 剥离 H3 支线（h3-adapter.md 独立成包）回落至 51；2026-11-15 新增 expression-motion-prompt-bank.md（表情/动作成品短语库）由 48 升至 49；2026-11-15 P16 新增 camera-movement-prompt-bank.md（运镜）与 asset-image-prompt-bank.md（资产出图）由 49 升至 51；2026-11-15 P17 新增 novel-to-shortdrama-adaptation.md（小说改编）与 character-visual-style-lock.md（角色造型锁）由 51 升至 53；2026-11-15 P19 新增 prompt-quality-enhancement.md（提示词质量增强层）由 53 升至 54；2026-11-24 新增 h3-production-pitfalls.md（H3 出片实战排坑）由 60 升至 61。
 SUB_SKILLS = [
     "sd-decision-engine", "sd-recon-engine", "sd-script-engine",
     "sd-asset-engine", "sd-storyboard-engine", "sd-combat-engine", "sd-xuanhuan-engine",
@@ -1113,7 +1113,7 @@ check("㊱ 去遗留后零断链（总控/子技能两侧入链点均已改指�
 check("㊱ 计数口径同步（SKILL 声明 == EXPECTED_REFS · 元规则四）",
       "45 份" not in skill and "36 份" not in skill and "37 份" not in skill
       and "38 份" not in skill and "48 份" not in skill and "49 份" not in skill and "51 份" not in skill and "53 份" not in skill and "54 份" not in skill
-      and f"{EXPECTED_REFS} 份规则库" in skill_corpus and EXPECTED_REFS == 60)
+      and f"{EXPECTED_REFS} 份规则库" in skill_corpus and EXPECTED_REFS == 61)
 check("㊲ M1 出图提示词配套纪律（asset-delivery-modes §4.4 · 2026-10-09 用户实测退回）",
       "出图提示词配套纪律" in _ade and "全套 P2.5 出图提示词" in _ade
       and "character-portrait-templates.md" in _ade and "scene-grid-template.md" in _ade
@@ -1547,7 +1547,7 @@ check("ㆂ 互锁⑦：camera-transitions-6types.md 指认本库为「扩写 + �
 check("ㆂ 互锁⑧：README 文件清单登记 creative-transition-library 行 + D 锁口径四选一",
       "| 衔接 | `creative-transition-library` |" in read(os.path.join(BASE, "README.md")))
 check("ㆂ 互锁⑨：计数口径同步（SKILL 声明 == EXPECTED_REFS · 元规则四）——本库入包后 SKILL 声明须同步",
-      f"{EXPECTED_REFS} 份规则库" in skill_corpus and EXPECTED_REFS == 60
+      f"{EXPECTED_REFS} 份规则库" in skill_corpus and EXPECTED_REFS == 61
       and "45 份" not in skill and "37 份" not in skill and "38 份" not in skill
       and "48 份" not in skill and "49 份" not in skill and "51 份" not in skill and "53 份" not in skill and "54 份" not in skill)
 check("ㆂ 互锁⑩：必查清单登记第 33 项「技巧型转场（D 锁 ④）」（按需 · 非每段必用）",

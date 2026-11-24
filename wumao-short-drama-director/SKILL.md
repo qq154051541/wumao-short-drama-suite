@@ -1,7 +1,7 @@
 ---
 name: wumao-short-drama-director
 version: "1.1.0"
-description: "给 AI 助手执行的**中文短剧**工业化导演系统（范围限制：只做普通话对白 + 简体字幕的竖屏短剧，不接英文剧/广告片/PREVIS）：把「一句话想法」或「一本小说」压成按 Seedance 七段式中文提示词或 MiniMax-H3 独立英文字段编排投喂稿，并用机检与人工复核降低跨镜头穿帮。1 个总控 + 10 个专项子技能 · 60 份规则库 · 429 条成品提示词 · C1~C41 合规机检。触发：写短剧剧本、小说改编、分集大纲、分镜脚本、人物立绘与九宫格场景图提示词、打戏分镜、投喂稿、出稿自检。"
+description: "给 AI 助手执行的**中文短剧**工业化导演系统（范围限制：只做普通话对白 + 简体字幕的竖屏短剧，不接英文剧/广告片/PREVIS）：把「一句话想法」或「一本小说」压成按 Seedance 七段式中文提示词或 MiniMax-H3 独立英文字段编排投喂稿，并用机检与人工复核降低跨镜头穿帮。1 个总控 + 10 个专项子技能 · 61 份规则库 · 429 条成品提示词 · C1~C41 合规机检。触发：写短剧剧本、小说改编、分集大纲、分镜脚本、人物立绘与九宫格场景图提示词、打戏分镜、投喂稿、出稿自检。"
 ---
 
 # Wumao Short-Drama Director · 中文短剧工业化导演系统（四层纵深架构 · 1 总控 + 10 子技能）
@@ -28,7 +28,7 @@ description: "给 AI 助手执行的**中文短剧**工业化导演系统（范�
 >
 > **怎么用**：直接说需求，总控自动路由；动手前会弹「五道前置锁＋画风锁」让你勾，勾完再开工。
 
-**版本 1.1.0** · 导演台 **1.4.0** · 1 总控 + 10 个专项子技能 · 60 份规则库 · 429 条成品提示词 · **现行唯一版本口径**（沿革见 `CHANGELOG.md`）。
+**版本 1.1.0** · 导演台 **1.4.0** · 1 总控 + 10 个专项子技能 · 61 份规则库 · 429 条成品提示词 · **现行唯一版本口径**（沿革见 `CHANGELOG.md`）。
 
 ## 能力与阶段速查
 
@@ -57,7 +57,7 @@ description: "给 AI 助手执行的**中文短剧**工业化导演系统（范�
   落地物：`<项目>/导演台/`（后端 + 两个前端 + 连续性校验 + H3 剧本转换 + 使用说明）+ 项目根 `启动导演台.bat` + `00_source/PROJECT_INFO.json` 模板（仅缺失时创建）+ `<项目>/导演台数据/`（任务、镜状态、历史快照、提交剧本）。**目录与文件一律用中文直述用途**，不手改、不让用户自己复制。`/建目录` 已内置该步，无需重复。⛔ 禁止只在本机某个项目里手工放过一次就算完。交付前 `--check` 必须通过（落后于技能版本 = 未落地）。
 - **范围限制：只做中文短剧（★ 2026-11-18 用户裁定）**：普通话对白 + 简体字幕 + 竖屏 9:16 连续短剧（单集 45~120 秒）。⛔ 不接英文/外语剧、出海多语本地化、长剧与电影剧本、广告片/宣传片、纯 MV、纯 PREVIS 特效预演。超出范围**当场说明并停手**，不要改造成"看起来像短剧"再套流程。项目侧以 `PROJECT_INFO.json` 的 `language`（默认 `zh-CN`）/ `form`（默认「中文短剧」）声明；导演台总览显示范围徽章，`language` 被改成非中文时拒绝出片。完整边界见文首「⛔ 适用范围」。
 - **四层纵深**：L0 总控 `wumao-short-drama-director` → L1 决策层 `sd-decision-engine` → L2 生产层（`sd-recon-engine` / `sd-script-engine` / `sd-asset-engine` / `sd-storyboard-engine` / `sd-combat-engine` / `sd-xuanhuan-engine` / `sd-real-engine`，共 7 个）→ L3 交付层（`sd-feed-engine` / `sd-qc-engine`）。
-- **共享权威**：锁系统〇节、**素材形态 `references/asset-delivery-modes.md`**、七段式 `model-adapters.md` §5、**画风锁知识库 `references/style-bible/`（方案通称 F 锁）**、**场面调度 `references/blocking-direction.md`**、**成片穿帮防治 `references/blooper-prevention-playbook.md`**、**群像行为调度 `wumao-short-drama-director/references/crowd-behavior-direction.md`（★ P7 新增 · 群像行为层唯一权威）**、**故事板图 `sd-storyboard-engine/references/storyboard-sheet-template.md`**、**剧情分镜格（推演宫格 · 条件必出）`sd-storyboard-engine/references/plot-deduction-grid.md`**、**预演故事板（P4.5 · 交付附件 · 只出提示词不出图）`sd-storyboard-engine/references/p45-previs-storyboard.md`**、**60 份规则库（含 style-bible 画风锁知识库 8 份）**、`scripts/` 机检全家桶（`validate_prompt.py` C1~C26，**含增量主码 C27a~d 对话戏节奏与台词密度下限 / C28a~c 台词机械化探测 / C29 资产状态偏离 / C30a~d 外挂指纹与跨阶段交接探针 / C31 交付契约门 / C32 画面段最低三要素 / C33 焦段 / C34 资产段 / C35 多人物镜层次 / C36 连续动作 / C37 背景多人同动 / C38 段间桥接 / C39 竖屏空镜 / **C40 群像行为缺失（条件触发 · C25b 的正面对偶）**（编号不重排）**；`style-lock-ladder.py` / `style-lock-recommend.py` 画风锁引擎；`check_package.py` 包级自检；`sd-feed-engine/scripts/gate_check.py` 投喂层闸门含素材形态一致性）。**权威归属表见 §一「现行规则域总览 · 唯一权威归属表」**。子技能路由表见「五、多技能套装路由」。
+- **共享权威**：锁系统〇节、**素材形态 `references/asset-delivery-modes.md`**、七段式 `model-adapters.md` §5、**画风锁知识库 `references/style-bible/`（方案通称 F 锁）**、**场面调度 `references/blocking-direction.md`**、**成片穿帮防治 `references/blooper-prevention-playbook.md`**、**群像行为调度 `wumao-short-drama-director/references/crowd-behavior-direction.md`（★ P7 新增 · 群像行为层唯一权威）**、**故事板图 `sd-storyboard-engine/references/storyboard-sheet-template.md`**、**剧情分镜格（推演宫格 · 条件必出）`sd-storyboard-engine/references/plot-deduction-grid.md`**、**预演故事板（P4.5 · 交付附件 · 只出提示词不出图）`sd-storyboard-engine/references/p45-previs-storyboard.md`**、**61 份规则库（含 style-bible 画风锁知识库 8 份）**、`scripts/` 机检全家桶（`validate_prompt.py` C1~C26，**含增量主码 C27a~d 对话戏节奏与台词密度下限 / C28a~c 台词机械化探测 / C29 资产状态偏离 / C30a~d 外挂指纹与跨阶段交接探针 / C31 交付契约门 / C32 画面段最低三要素 / C33 焦段 / C34 资产段 / C35 多人物镜层次 / C36 连续动作 / C37 背景多人同动 / C38 段间桥接 / C39 竖屏空镜 / **C40 群像行为缺失（条件触发 · C25b 的正面对偶）**（编号不重排）**；`style-lock-ladder.py` / `style-lock-recommend.py` 画风锁引擎；`check_package.py` 包级自检；`sd-feed-engine/scripts/gate_check.py` 投喂层闸门含素材形态一致性）。**权威归属表见 §一「现行规则域总览 · 唯一权威归属表」**。子技能路由表见「五、多技能套装路由」。
 
 > ⚠️ **④ 的病灶与修法（务必理解，否则会改回去）**：「资产图册＝唯一事实来源」与「无图不进分镜」＋ 本包自身「默认只出提示词、不调出图工具」铁律——**三者并存 → 执行者要么卡死、要么假装通过**。而**用户的真实工作流是「拿提示词去平台自己跑图、图不回传」**——这类流程中，图可始终留在用户的平台。**因此「图片入库」从「前置阻塞条件」降级为「可选的登记动作」**，并设 M0/M1/M2 三形态与《素材接线单》作为其正向替代物。
 
@@ -92,7 +92,7 @@ description: "给 AI 助手执行的**中文短剧**工业化导演系统（范�
 > 3. **交付前跑一次总质检（P14 判据级去重 · 2026-11-03 用户裁定）**：质检**只跑一遍**——Seedance 每稿只运行一次 `sd-feed-engine/scripts/gate_check.py <稿.md> --model <版本> --aspect 9:16`，会同时给出「投喂层闸门」与「C 系机检」结果（内部调用 `validate_prompt.py`，不得另行重复运行）；随后**再加跑** `python scripts/audit_contract.py <稿件.md>` 核销契约（这一层查的是"该交的东西交没交"，与语法判据不重叠）。⛔ 严禁把同一判据在不同工具里反复检查后互相"复审"，也严禁拿「机检全绿」当「任务完成」——契约未核销 = 未交付。
 
 > 💰 **【预算铁律：先报账 · 单批 ≤8k · 按结构切批 · 落盘即续】（2026-10-18 新增 · 专治「长流程跑着跑着开始敷衍」）**：
-> **病灶先认清（否则会修错地方）**：全包 143 个 Markdown 文件 / 125.4 万字符（≈78 万 token 当量），**单是总控本文件就 7.8 万字符（≈4.9 万 token）**。所以「装不下」永远发生在**输入侧**，「敷衍」则发生在**输出侧的第 8k 字以后**——⛔ **别把 128k 当单次输出上限**（那是上下文窗口，读入+历史+输出共用）；⛔ **也别指望模型自己数 token**（中文 1 字 ≈ 1–1.5 token，自估误差可达 50%，算账本身就烧额度）。
+> **病灶先认清（否则会修错地方）**：全包 144 个 Markdown 文件 / 125.4 万字符（≈78 万 token 当量），**单是总控本文件就 7.8 万字符（≈4.9 万 token）**。所以「装不下」永远发生在**输入侧**，「敷衍」则发生在**输出侧的第 8k 字以后**——⛔ **别把 128k 当单次输出上限**（那是上下文窗口，读入+历史+输出共用）；⛔ **也别指望模型自己数 token**（中文 1 字 ≈ 1–1.5 token，自估误差可达 50%，算账本身就烧额度）。
 > 1. **报账制（开工第一步 · 与五道锁同批完成）**：先报「阶段 → 预计批数 → 每批字数」，由 `python3 scripts/slice_context.py --estimate --stage <P#> --combat <R1~R3> --model <2.5|2.0> --mode <M0~M2>` 出数，**禁止心算**。报完账再动笔；批数与用户预期不符时当场对齐，别写到一半才说"篇幅太大"。
 > 2. **读入侧只读切片**：每阶段**只读 `slice_context.py` 切出的清单**，禁止通读全包、禁止一次加载多个阶段原文；同一份成稿全文**只载入一次**，下游靠落盘产物 + 《连续性台账》接力，⛔ 不靠"我再复述一遍"接力（复述＝双倍烧 token + 引入漂移）。
 > 3. **输出侧单批 ≤8000 token（约 1.2 万汉字）**：越过 8k 后段必然开始套模板——写「同上」「其余同理」「省略若干条」「格式参照前文」，**这就是用户体感里的"AI 偷懒"**。接近上限**主动切批**，不等截断、不等用户发现。
@@ -157,7 +157,7 @@ P3 调度与分镜生成、P4 投喂生成、导演台编辑和重生成前，�
 ### A · 模型版本三选一：Seedance 2.5 / Seedance 2.0 / MiniMax-H3
 
 - **用户必须明确选择（三选一）：① Seedance 2.5 / ② Seedance 2.0 / ③ MiniMax-H3**：
-  - **③ MiniMax-H3** = 进入 **`references/h3-adapter.md`**：官方**三段**（`integrated_multimodal_description` / `overall_soundscape` / `non_diegetic_music`）或**六段**（Ref2VA）字段、**英文技术正文 + 普通话对白 + 简体中文字幕**、**原生音轨（对白/环境/配乐一体）**、单段 **4~15 秒**、机检走 **H1~H6**；⛔ 选 H3 就**不许出现七段式栏位名与 `[SFX:]`/首尾帧术语**，反之亦然（两条线互斥、禁止混写）。**本机出片前必过 §十一 七个坑**：①`ref_image_N` 前缀 ②`length` 步进 ③服装写进 prompt ④`ContextWindows`+`overlap-linear`+6 步 ⑤**不能把设定板当参考图（跑 `scripts/build_h3_refs.py` 派生单图）** ⑥**AddGuide 只给同机位连续段** ⑦**每段出场人物都要有自己的 refs 条目**；站位/开门/镜序写法见该节「空间锁三层」
+  - **③ MiniMax-H3** = 进入 **`references/h3-adapter.md`**：官方**三段**（`integrated_multimodal_description` / `overall_soundscape` / `non_diegetic_music`）或**六段**（Ref2VA）字段、**英文技术正文 + 普通话对白 + 简体中文字幕**、**原生音轨（对白/环境/配乐一体）**、单段 **4~15 秒**、机检走 **H1~H6**；⛔ 选 H3 就**不许出现七段式栏位名与 `[SFX:]`/首尾帧术语**，反之亦然（两条线互斥、禁止混写）。**本机出片前必过 §十一 七个坑**：①`ref_image_N` 前缀 ②`length` 步进 ③服装写进 prompt ④⚠️**ContextWindows 已弃用（2026-11-23 推翻）**——长段挂窗口虽消网格但致台词/画面重复，**现行唯一路线＝5 秒段（124帧/4步/不挂窗口）+ lanczos 超分**，详见坑4 修正说明 ⑤**不能把设定板当参考图（跑 `scripts/build_h3_refs.py` 派生单图；从四格板裁身份锚点的方法见 `references/h3-production-pitfalls.md` 坑 D）** ⑥**AddGuide 只给同机位连续段** ⑦**每段出场人物都要有自己的 refs 条目**；站位/开门/镜序写法见该节「空间锁三层」。**★ 音轨与规模化出片的六个坑（中文指令被念、重复语音、ASR 复检、锚点裁切、ASS 拆行、编排）见 `references/h3-production-pitfalls.md`（出片前/后检查清单必跑）**
   - **① Seedance 2.5 / ② Seedance 2.0** = 进入下方 Seedance 契约（**两版语法彻底分开、禁止混写**；锁定 2.5 时还追加「参考模式二选一」）；
 - **未指定时，唯一正确动作是停下询问用户**，禁止以任何理由默认选版——**三选一之中没有任何一项可以作为默认值**；
 - 锁定后全流程（提示词语法 / 投喂封装 / 参考图 / 音效 / 首尾帧）一律按该版本契约执行，**禁止混写**；
@@ -285,7 +285,7 @@ P3 调度与分镜生成、P4 投喂生成、导演台编辑和重生成前，�
 
 ## 一、 系统架构与专业规则库索引
 
-> **本节只做「有什么、谁说了算」两件事。** 完整 60 份规则库的**读取时机**见 §五《按需规则文件 · 触发条件台账》；**权威归属**见下表。⛔ 别在本节找规则内容——本节不含任何判据。
+> **本节只做「有什么、谁说了算」两件事。** 完整 61 份规则库的**读取时机**见 §五《按需规则文件 · 触发条件台账》；**权威归属**见下表。⛔ 别在本节找规则内容——本节不含任何判据。
 
 ```text
 skills/wumao-short-drama-director/          # L0 总控
@@ -318,7 +318,7 @@ skills/wumao-short-drama-director/          # L0 总控
 │   ├── install_director_console.py   # 同步项目导演台、数据目录与启动脚本
 │   ├── absorb_candidate.py           # 外部点子结构化初筛（只产候选）
 │   └── test_*.py                     # 回归自测
-└── references/                       # 60 份规则库
+└── references/                       # 61 份规则库
     ├── style-bible/                  # 画风锁知识库 8 份（锁规程/转译/参数/成品块/74 组目录/适配矩阵/六原型/交付规范）
     ├── ★ asset-first-pipeline.md     # P0~P5 唯一生产顺序 + A0~A3 依赖分级
     ├── ★ asset-delivery-modes.md     # 素材存在形态 M0/M1/M2 + 接线单 + 文字锁 + 门禁改判表
@@ -344,6 +344,7 @@ skills/wumao-short-drama-director/          # L0 总控
     ├── ★ character-visual-style-lock.md      # 角色造型风格锁（L1~L4 男女同档配对 / 定妆九槽位 / 公开穿搭图造型参考采集）
     ├── ★ prompt-quality-enhancement.md         # 提示词质量增强层（八维模型 / 枚举式节拍骨架 / 6 条冲突裁决 · 引擎 scripts/prompt_quality_audit.py）
     ├── ★ h3-adapter.md                      # MiniMax-H3 适配层（官方三段/六段 · 原生音频 · SRT · 机检 H1~H6）
+    ├── ★ h3-production-pitfalls.md          # H3 出片实战排坑（音轨污染/ContextWindows弃用/ASR复检/锚点裁切/ASS拆行/规模化编排 · 出片前后检查清单）
     ├── ★ redfruit-delivery-spec.md          # 红果交付规格（9:16 安全区 / 字幕 / 电平 / 上架字段 / 跨集一致性）
     ├── ★ output-directory-spec.md       # 输出目录规范（00_source~07_reports / 每段一个投产包）
     ├── ★ skill-evolution-protocol.md      # 自成长协议（六步闭环 / 5 问评分卡 / 开源闭源双轨）
@@ -360,7 +361,7 @@ skills/wumao-short-drama-director/          # L0 总控
 
 | 层 | 技能 | 职责一句话 |
 |---|---|---|
-| **L0** | `wumao-short-drama-director` | 总控：五道锁 / 素材形态 / 60 份规则库 / 七段式 / 机检门位 / P0~P2 门禁 |
+| **L0** | `wumao-short-drama-director` | 总控：五道锁 / 素材形态 / 61 份规则库 / 七段式 / 机检门位 / P0~P2 门禁 |
 | **L1** | `sd-decision-engine` | 情境映射 E01~E15 + 80/15/5 权重 + 情绪锚点表 + 构图雷区 A/B 双态白名单 |
 | **L2** | `sd-recon-engine` | 素材采风（〇·1 锁 ③④）：信源分级 + 采风四步 + 对标情报卡十三项 + 证据纪律 |
 | **L2** | `sd-script-engine` | 剧本：六阶段链 + 反捧杀 + 创作笔记 + 五视角审稿 + 会诊警报 + 台词七维 + 节奏矩阵 |
@@ -412,7 +413,8 @@ skills/wumao-short-drama-director/          # L0 总控
 | **34** | **小说 → 短剧改编（改编决策域）** | **`references/novel-to-shortdrama-adaptation.md`** | 〇·1 锁 = ② 改编时必读。剧情理解三层（事件图谱 / 全书关系图谱 / 多线时间线）+ 改编值四问 + 来源三分法；爽点表 `PAY-<N>` 驱动的主动取舍（先留爽点→先删线→后合并→高光前置落审计）；爽点五要件 + 六格矩阵 + 8 类爽感配比；每集钩子矩阵七列与强悬念留存位；**6 条与本包铁律的冲突裁决**（禁照搬外部 90~120 秒单集 / 禁「增加爽点」当指令 / 付费卡点转语义 / 术语禁进 P4）。**分工**：六阶段链归 `sd-script-engine`，钩子账归 `episode-planning.md`，12 节拍归 `emotion-beat-curve.md`；本文件只补「留什么砍什么、爽在哪一秒」 |
 | **35** | **角色造型风格锁（造型层）** | **`references/character-visual-style-lock.md`** | 小说人物转可视形象、妆发服装风格、男女主同档时必读。L1~L4 四档 × 八维度**男女同档配对** + 定妆五段式九槽位 + 全剧五项统一与 T1/T2/T3 层级差。**★ 造型参考（用户裁定 P18）**：允许用自备参考图**公开服装图片**作人物形象与服装参考（采集器 自备参考图工作流 + 实测参考卡）；产出为虚构角色，⛔ 真人原图不上传视频模型（`SKILL.md` H 节平台限制）。**分工**：I 画风锁 `style-bible/` 管镜头光影、四格板字段归 `sd-asset-engine`、亲缘推导归 `character-lineage-and-sheets.md`；本锁只管造型取值，⛔ 造型全文不进 P4 投喂稿 |
 | **36** | **提示词质量增强（质量层 · 模型无关）** | **`references/prompt-quality-enhancement.md`** | ★ 从 公开成片样本复算归纳：**八维质量模型 D1~D8**（锚定清单 / 每镜新信息 / 节拍骨架 / 因果运镜 / 声音同步 / 物理交互边界 / 跨切继承 / 收束态）+ 四条反模式 + 枚举式节拍骨架 + **6 条硬冲突裁决**（篇幅 / 英文字段名 / 硬切语法 / 负向块 / 参数锚点 / 成稿版权）+ 迭代法；引擎 `scripts/prompt_quality_audit.py`（**只建议不改稿、不判 FAIL**）。**分工**：合规归 `validate_prompt.py` 的 C 码与本清单，七段式归 `model-adapters.md` §5，成品短语归三份 bank；本文件只管「合规之外还缺什么」。⛔ **H3 走独立适配层 `references/h3-adapter.md`**（字段 / 音轨 / 字幕与 Seedance 不通用），不得把 H3 字段混进 Seedance 稿 |
-| **37** | **MiniMax-H3 适配（模型线 ③）** | **`references/h3-adapter.md`** | 官方三段/六段字段（`integrated_multimodal_description` / `overall_soundscape` / `non_diegetic_music`；Ref2VA 再加 `subject_definitions`/`summary`/`retention_analysis`/`detailed_description`）+ 五种输入模式（T2VA/I2VA/FL2VA/L2VA/Ref2VA）+ **原生音频**（对白写进描述、音效绑动作、配乐标进出点）+ **字幕由音轨反推 SRT**（画面禁画字）+ 与七段式的映射表 + 6 条冲突裁决 + 机检 **H1~H6**。**分工**：七段式归 `model-adapters.md` §5（Seedance 专用），**H3 与它互斥**；⛔ 两条线的字段不得混写 |
+| **37** | **MiniMax-H3 适配（模型线 ③）** | **`references/h3-adapter.md`** | 官方三段/六段字段（`integrated_multimodal_description` / `overall_soundscape` / `non_diegetic_music`；Ref2VA 再加 `subject_definitions`/`summary`/`retention_analysis`/`detailed_description`）+ 五种输入模式（T2VA/I2VA/FL2VA/L2VA/Ref2VA）+ **原生音频**（对白写进描述、音效绑动作、配乐标进出点）+ **字幕由音轨反推 SRT**（画面禁画字）+ 与七段式的映射表 + 6 条冲突裁决 + 机检 **H1~H6**。**分工**：七段式归 `model-adapters.md` §5（Seedance 专用），**H3 与它互斥**；⛔ 两条线的字段不得混写。**★ 出片实操排坑归 `references/h3-production-pitfalls.md`**（音轨污染的六段式修复 / ContextWindows 长段重复语音已弃用改 5 秒段 / 逐段 ASR 复检 / 四格板裁身份锚点 / ASS 长台词拆行 / 数据驱动+试片闸门+无人值守编排），本表 37 只管字段格式，不管跑起来之后的坑 |
+| **37b** | **H3 出片实战排坑（出片域 · 2026-11-24 实跑回写）** | **`references/h3-production-pitfalls.md`** | 末日求生短剧 E01~E10（246 段）实证：**坑 A** 中文 prompt/工程指令被念成台词（六段英文+`validate()` 闸门）→ **坑 B** ContextWindows 长段致台词画面重复（推翻 h3-adapter 坑4 推荐，改 5 秒段无窗口+超分）→ **坑 C** QC 只查台词命中不够、必须逐段 ASR 复检（RMS 停顿判据对 H3 环境音全误报）→ **坑 D** 四格板裁身份锚点 → **坑 E** ASS 长台词拆行 → **坑 F** 数据驱动引擎+试片闸门+多集无人值守编排。含**出片前/后检查清单**。⛔ 与 37 配套：37 管字段格式，本表管跑起来之后的坑；两文冲突以本文 2026-11-24 结论为准 |
 | **38** | **红果交付规格（上架域）** | **`references/redfruit-delivery-spec.md`** | 9:16 安全区 / 集长与节奏 / 字幕规格 / 三层电平 / 开场收尾 / 上架字段 / **跨集一致性台账** / 上架前 12 项自检。**口径分层**：硬约束（平台公开规则、模型契约）与经验值（标「待核验」）必须分开写；审核红线仍归 `platform-safety-compliance-guide.md` |
 | **39** | **输出目录规范（工程域）** | **`references/output-directory-spec.md`** | 标准目录树 00_source~07_reports / 命名规则 / 每段一个投产包 / `init_project_tree.py --check` 验收；**「导演台数据落盘避错清单」= 四视图数据源对照 + 症状速查 + 交付前必跑 `check_director_data.py`**。**分工**：素材形态归 `asset-delivery-modes.md`，上架自检归 `redfruit-delivery-spec.md` |
 | **41** | **人物连续性生产门（身份 / 逐句说话人 / 逐人状态继承）** | **`references/director-console.md` §四·补「人物连续性生产门」** | P3 / P4 生成及导演台必须读；机器 schema 以 `scripts/continuity.py` 为准；调度决定仍归 `blocking-direction.md`，空间事实归 `asset-spatial-ledger.md`，文本通过不代表成片核验 |
@@ -587,7 +589,7 @@ skills/wumao-short-drama-director/          # L0 总控
 
 > ⚠️ **本章是「总控的内部调度机制」，不是「用户操作手册」。** 用户全流程使用时**只跟总控对话一次**，本表的全部路由由总控自动完成，用户无需阅读、无需手动指定任何一行。本章只服务于「总控内部如何按阶段分流」以及「点名单模块的进阶用户」。
 
-> **架构分工**：跨阶段共享权威（锁系统〇节 / 七段式 `model-adapters.md` / 画幅 / 段缝 / FACS / **60 份规则库** / `scripts/` 机检全家桶）**保留在本总控**；领域专精规则下沉到 **10 个子技能**。
+> **架构分工**：跨阶段共享权威（锁系统〇节 / 七段式 `model-adapters.md` / 画幅 / 段缝 / FACS / **61 份规则库** / `scripts/` 机检全家桶）**保留在本总控**；领域专精规则下沉到 **10 个子技能**。
 >
 > **打戏三档分流**：通用武侠物理打斗 → `sd-combat-engine`；R3 玄幻仙侠斗法 → `sd-xuanhuan-engine`（完整规则库权威）；R1 真人写实克制 → `sd-real-engine`（完整规则库权威）。后两者同时保有独立开源仓库，可脱离套装单独分发。
 

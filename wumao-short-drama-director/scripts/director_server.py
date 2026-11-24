@@ -2,6 +2,15 @@
 # -*- coding: utf-8 -*-
 """director_server.py · 导演台动态控制台（本地服务 · 纯标准库）
 
+端口策略（2026-11-23 · 用户实测多项目并行撞端口后修订）：
+    --port N            固定端口；被占用时自动顺延 N+1、N+2 …（最多 100 个），
+                        并在启动横幅里打印实际占用情况，不再崩、不再误开别人的台。
+    --port auto         从 BASE 起找第一个空闲端口（多项目并行默认用这个）
+    --port 缺省         等价 auto
+    ⚠ 端口 ≠ 项目：同一端口只认先启动的那个实例；第二个项目若被误指到
+      已占端口，打开的是别人的导演台（数据各写各的项目目录，不会串，
+      但界面看的不是自己项目）。启动横幅会打印实际 root，开台前先核对。
+
 把"看板"从静态资产浏览器升级为可编辑、可重新生成的动态导演台：
     分集点播 / 资产浏览 / 剧本站段编辑 / 分镜画格墙 / 提示词编辑 /
     单段重新生成 / 版本对比 / 图片重生成与回滚
@@ -2155,12 +2164,76 @@ def self_check():
     return ok
 
 
+def _resolve_port(port_arg: str, base: int = 8770, cap: int = 100) -> int:
+    """把 --port 解析成实际端口：固定号被占用时自动顺延，最多试 cap 个。"""
+    import socket
+    want = "auto" if str(port_arg).lower() in ("", "auto") else str(port_arg)
+    start = base if want == "auto" else int(want)
+    for offset in range(cap):
+        p = start + offset
+        s = socket.socket()
+        try:
+            s.bind(("127.0.0.1", p))
+        except OSError:
+            s.close()
+            continue
+        s.close()
+        if offset:
+            print(f"[i] 端口 {start} 被占用，顺延到 {p}", flush=True)
+        return p
+    raise SystemExit(f"[x] 端口 {start}~{start + cap - 1} 全被占用，换个时间段再试")
+
+
+def _write_runtime_port(port: int) -> Path:
+    """把本次实际绑定端口写进 导演台数据/port.json。
+
+    这是端口的唯一真相源：启动器 / 外部脚本要打开浏览器就读这里，
+    绝不能自己预探测端口（预探测与服务真实绑定之间存在竞态，会打开别人的台）。
+    """
+    import json as _json
+    payload = {
+        "port": port,
+        "url": f"http://127.0.0.1:{port}/board",
+        "title": TITLE,
+        "root": str(ROOT),
+        "pid": os.getpid(),
+    }
+    target = data_dir() / "port.json"
+    tmp = target.with_suffix(".json.tmp")
+    try:
+        with tmp.open("w", encoding="utf-8") as f:
+            _json.dump(payload, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, target)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return target
+
+
+def _open_browser(url: str) -> bool:
+    """服务真正绑定后才开浏览器，指向实际端口。失败只提示，不影响服务。"""
+    import webbrowser
+    try:
+        opened = webbrowser.open(url, new=2)
+    except Exception as exc:  # webbrowser 在部分无头环境会抛异常
+        print(f"[!] 自动打开浏览器失败：{exc}", flush=True)
+        print(f"[i] 请手动复制地址到浏览器：{url}", flush=True)
+        return False
+    if not opened:
+        print(f"[!] 系统未注册可打开的默认浏览器，请手动复制：{url}", flush=True)
+    return bool(opened)
+
+
 def main():
     global ROOT, TITLE, SEG_EP
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
-    ap.add_argument("--port", type=int, default=8770)
+    ap.add_argument("--port", default="auto",
+                    help="端口号或 auto（默认）：固定 N 被占用时自动顺延；auto 从 8770 起找第一个空闲")
     ap.add_argument("--title", default="")
+    ap.add_argument("--no-browser", action="store_true",
+                    help="不自动打开浏览器（脚本/CI 场景用）；地址仍会打印并写入 port.json")
     ap.add_argument("--check", action="store_true", help="环境自检（不启服务）")
     ap.add_argument("--self-test", action="store_true", help="离线核心函数自测")
     a = ap.parse_args()
@@ -2172,8 +2245,16 @@ def main():
         sys.exit(0 if self_test() else 1)
     if a.check:
         sys.exit(0 if self_check() else 1)
-    srv = ThreadingHTTPServer(("127.0.0.1", a.port), Handler)
-    print(f"[+] 导演台已启动 http://127.0.0.1:{a.port}/board  ({TITLE})", flush=True)
+    port = _resolve_port(a.port)
+    srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    url = f"http://127.0.0.1:{port}/board"
+    pf = _write_runtime_port(port)
+    print(f"[+] 导演台已启动 {url}  ({TITLE})", flush=True)
+    print(f"[i] 数据根：{ROOT}", flush=True)
+    print(f"[i] 实际端口已写入 {pf}（启动器/外部脚本读此文件，勿自行预探测端口）", flush=True)
+    print(f"[i] 同端口只认先启动的实例；本台数据只写 {ROOT}，互不串。", flush=True)
+    if not a.no_browser:
+        _open_browser(url)
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
